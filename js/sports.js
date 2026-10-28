@@ -1,4 +1,4 @@
-// js/sports.js - Motor Dinâmico Híbrido (API + Fallback Inteligente)
+// js/sports.js - Motor Dinâmico Exclusivo da API Real
 
 let currentBet = null;
 let matchesData = [];
@@ -14,7 +14,7 @@ async function loadAndRenderMatches() {
         list.innerHTML = `
             <div class="flex flex-col items-center justify-center py-12 text-brand-primary col-span-full">
                 <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
-                <p class="text-sm text-gray-400 font-bold uppercase tracking-widest">A sincronizar cotações ao vivo...</p>
+                <p class="text-sm text-gray-400 font-bold uppercase tracking-widest">A procurar jogos ao vivo...</p>
             </div>
         `;
     }
@@ -24,62 +24,56 @@ async function loadAndRenderMatches() {
 }
 
 async function fetchMatches() {
-    let apiMatches = [];
+    if (!USE_REAL_API || API_KEY === "COLA_A_TUA_CHAVE_AQUI") {
+        return [];
+    }
 
-    if (USE_REAL_API && API_KEY !== "COLA_A_TUA_CHAVE_AQUI") {
-        try {
-            // Buscamos os jogos ao vivo que funcionam perfeitamente no plano gratuito
-            const response = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
-                method: "GET",
-                headers: {
-                    "x-apisports-key": API_KEY
-                }
-            });
-            const data = await response.json();
-            
-            if (data.response && data.response.length > 0) {
-                apiMatches = data.response.slice(0, 8).map(match => ({
-                    id: match.fixture.id,
-                    league: match.league.name,
-                    time: match.fixture.status.elapsed ? match.fixture.status.elapsed + "'" : "AO VIVO",
-                    home: match.teams.home.name,
-                    away: match.teams.away.name,
-                    score: `${match.goals.home ?? 0} - ${match.goals.away ?? 0}`,
-                    odds: { 
-                        home: Number((1.5 + (match.fixture.id % 5) * 0.1).toFixed(2)), 
-                        draw: 3.20, 
-                        away: Number((2.1 + (match.fixture.id % 4) * 0.15).toFixed(2)) 
-                    }
-                }));
+    try {
+        // Puxa estritamente os jogos ao vivo reais da API-Football
+        const response = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
+            method: "GET",
+            headers: {
+                "x-apisports-key": API_KEY
             }
-        } catch (error) {
-            console.error("Aviso da API:", error);
+        });
+        const data = await response.json();
+        
+        if (data.response && data.response.length > 0) {
+            return data.response.map(match => ({
+                id: match.fixture.id,
+                league: match.league.name,
+                time: match.fixture.status.elapsed ? match.fixture.status.elapsed + "'" : "AO VIVO",
+                home: match.teams.home.name,
+                away: match.teams.away.name,
+                score: `${match.goals.home ?? 0} - ${match.goals.away ?? 0}`,
+                odds: { 
+                    home: Number((1.5 + (match.fixture.id % 5) * 0.1).toFixed(2)), 
+                    draw: 3.20, 
+                    away: Number((2.1 + (match.fixture.id % 4) * 0.15).toFixed(2)) 
+                }
+            }));
         }
-    }
-
-    // Se a API trouxer menos de 3 jogos (ex: horários sem jogos ao vivo), 
-    // juntamos com os jogos de destaque para a plataforma parecer sempre recheada.
-    const fallback = getFallbackData();
-    
-    if (apiMatches.length > 0) {
-        // Junta os da API com alguns de segurança para dar volume à página
-        return [...apiMatches, ...fallback].slice(0, 6);
+    } catch (error) {
+        console.error("Erro ao ligar à API-Football:", error);
     }
     
-    return fallback;
-}
-
-function getFallbackData() {
-    return [
-        { id: 101, league: 'Brasileirão Série A', time: '72\'', home: 'Flamengo', away: 'Palmeiras', score: '2 - 1', odds: { home: 1.85, draw: 3.20, away: 4.10 } },
-        { id: 102, league: 'Liga dos Campeões', time: '21:30', home: 'Real Madrid', away: 'Man City', score: 'vs', odds: { home: 2.45, draw: 3.40, away: 2.75 } },
-        { id: 103, league: 'Premier League', time: 'Amanhã', home: 'Arsenal', away: 'Liverpool', score: 'vs', odds: { home: 3.10, draw: 2.90, away: 1.80 } }
-    ];
+    return []; // Retorna vazio se não houver nenhum jogo real a decorrer
 }
 
 function renderMatches() {
     const list = document.getElementById('sports-list');
     if (!list) return;
+
+    if (matchesData.length === 0) {
+        list.innerHTML = `
+            <div class="bg-brand-card border border-brand-border rounded-xl p-8 text-center col-span-full space-y-3">
+                <i class="fa-solid fa-satellite-dish text-4xl text-gray-500 mb-2"></i>
+                <h3 class="font-bold text-lg text-white">Sem jogos ao vivo de momento</h3>
+                <p class="text-xs text-gray-400 max-w-md mx-auto">De momento não existem partidas de futebol a decorrer no mundo detetadas pela API. Tenta novamente mais tarde ou testa o nosso cassino na aba <span class="text-brand-primary font-bold">Mines</span>!</p>
+            </div>
+        `;
+        return;
+    }
     
     list.innerHTML = matchesData.map(m => `
         <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4 shadow-sm hover:border-brand-primary transition-colors relative overflow-hidden">
