@@ -1,115 +1,42 @@
-// js/sports.js - Motor Dinâmico Exclusivo da API Real
+// js/sports.js - Módulo de Apostas com Widget Oficial da API-Football
 
 let currentBet = null;
-let matchesData = [];
 
-const USE_REAL_API = true; 
-const API_KEY = "219415e7d2ff117cc0e96919766c5479"; 
+window.addEventListener('DOMContentLoaded', () => {
+    renderSportsWidget();
+});
 
-window.addEventListener('DOMContentLoaded', loadAndRenderMatches);
-
-async function loadAndRenderMatches() {
-    const list = document.getElementById('sports-list');
-    if (list) {
-        list.innerHTML = `
-            <div class="flex flex-col items-center justify-center py-12 text-brand-primary col-span-full">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
-                <p class="text-sm text-gray-400 font-bold uppercase tracking-widest">A procurar jogos ao vivo...</p>
-            </div>
-        `;
-    }
-
-    matchesData = await fetchMatches();
-    renderMatches();
-}
-
-async function fetchMatches() {
-    if (!USE_REAL_API || API_KEY === "COLA_A_TUA_CHAVE_AQUI") {
-        return [];
-    }
-
-    try {
-        // Puxa estritamente os jogos ao vivo reais da API-Football
-        const response = await fetch("https://v3.football.api-sports.io/fixtures?live=all", {
-            method: "GET",
-            headers: {
-                "x-apisports-key": API_KEY
-            }
-        });
-        const data = await response.json();
-        
-        if (data.response && data.response.length > 0) {
-            return data.response.map(match => ({
-                id: match.fixture.id,
-                league: match.league.name,
-                time: match.fixture.status.elapsed ? match.fixture.status.elapsed + "'" : "AO VIVO",
-                home: match.teams.home.name,
-                away: match.teams.away.name,
-                score: `${match.goals.home ?? 0} - ${match.goals.away ?? 0}`,
-                odds: { 
-                    home: Number((1.5 + (match.fixture.id % 5) * 0.1).toFixed(2)), 
-                    draw: 3.20, 
-                    away: Number((2.1 + (match.fixture.id % 4) * 0.15).toFixed(2)) 
-                }
-            }));
-        }
-    } catch (error) {
-        console.error("Erro ao ligar à API-Football:", error);
-    }
-    
-    return []; // Retorna vazio se não houver nenhum jogo real a decorrer
-}
-
-function renderMatches() {
+function renderSportsWidget() {
     const list = document.getElementById('sports-list');
     if (!list) return;
 
-    if (matchesData.length === 0) {
-        list.innerHTML = `
-            <div class="bg-brand-card border border-brand-border rounded-xl p-8 text-center col-span-full space-y-3">
-                <i class="fa-solid fa-satellite-dish text-4xl text-gray-500 mb-2"></i>
-                <h3 class="font-bold text-lg text-white">Sem jogos ao vivo de momento</h3>
-                <p class="text-xs text-gray-400 max-w-md mx-auto">De momento não existem partidas de futebol a decorrer no mundo detetadas pela API. Tenta novamente mais tarde ou testa o nosso cassino na aba <span class="text-brand-primary font-bold">Mines</span>!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    list.innerHTML = matchesData.map(m => `
-        <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4 shadow-sm hover:border-brand-primary transition-colors relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-1 h-full bg-brand-primary"></div>
-            
-            <div class="flex justify-between items-center text-xs text-gray-400">
-                <span class="flex items-center font-bold text-white bg-red-600/20 px-2 py-0.5 rounded border border-red-500/30">
-                    <i class="fa-solid fa-circle text-red-500 animate-pulse mr-1.5 text-[8px]"></i> ${m.time}
+    // Injeta o iframe oficial do widget da API-Football diretamente na tua página
+    // Utiliza a tua chave API para carregar os dados oficiais em tempo real
+    list.innerHTML = `
+        <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4 shadow-sm">
+            <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                <span class="text-sm font-bold text-brand-primary flex items-center">
+                    <i class="fa-solid fa-satellite-dish mr-2"></i> Central de Jogos Ao Vivo (API Oficial)
                 </span>
-                <span class="text-gray-400 font-bold uppercase tracking-wider text-[10px]">${m.league}</span>
+                <span class="text-xs text-gray-400">Atualizado em tempo real</span>
             </div>
             
-            <div class="flex justify-between items-center font-bold text-lg">
-                <span class="w-2/5 text-right truncate pr-2">${m.home}</span>
-                <span class="w-1/5 text-center text-brand-primary text-xl font-black bg-brand-dark py-1 rounded border border-brand-border">${m.score}</span>
-                <span class="w-2/5 text-left truncate pl-2">${m.away}</span>
-            </div>
-            
-            <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-brand-border/50">
-                <button onclick="addBet('${m.home} x ${m.away}', '${m.home}', ${m.odds.home})" class="bg-brand-dark hover:bg-brand-primary hover:text-white border border-brand-border hover:border-brand-primary p-2 rounded text-center transition-all group flex justify-between items-center px-3">
-                    <span class="text-xs text-gray-500 group-hover:text-white/80">1</span>
-                    <span class="font-bold text-brand-primary group-hover:text-white">${m.odds.home.toFixed(2)}</span>
-                </button>
-                <button onclick="addBet('${m.home} x ${m.away}', 'Empate', ${m.odds.draw})" class="bg-brand-dark hover:bg-brand-primary hover:text-white border border-brand-border hover:border-brand-primary p-2 rounded text-center transition-all group flex justify-between items-center px-3">
-                    <span class="text-xs text-gray-500 group-hover:text-white/80">X</span>
-                    <span class="font-bold text-brand-primary group-hover:text-white">${m.odds.draw.toFixed(2)}</span>
-                </button>
-                <button onclick="addBet('${m.home} x ${m.away}', '${m.away}', ${m.odds.away})" class="bg-brand-dark hover:bg-brand-primary hover:text-white border border-brand-border hover:border-brand-primary p-2 rounded text-center transition-all group flex justify-between items-center px-3">
-                    <span class="text-xs text-gray-500 group-hover:text-white/80">2</span>
-                    <span class="font-bold text-brand-primary group-hover:text-white">${m.odds.away.toFixed(2)}</span>
-                </button>
+            <div class="w-full overflow-hidden rounded-lg bg-brand-dark min-h-[500px] flex items-center justify-center">
+                <!-- Widget Oficial da API-Football incorporado de forma segura -->
+                <script type="module" src="https://widgets.api-sports.io/2.0.3/widgets.js"></script>
+                <api-sports-widget 
+                    key="219415e7d2ff117cc0e96919766c5479"
+                    domain="v3.football.api-sports.io"
+                    league="71" 
+                    season="2026"
+                    theme="dark"
+                    ></api-sports-widget>
             </div>
         </div>
-    `).join('');
+    `;
 }
 
+// Funções do Boletim de Apostas lateral (Mantidas intactas)
 function addBet(match, selection, odds) {
     currentBet = { match, selection, odds: parseFloat(odds) };
     document.getElementById('betslip-content').innerHTML = `
