@@ -100,8 +100,6 @@
         <!-- Coluna Central -->
         <main class="flex-1 bg-brand-dark overflow-y-auto p-4 lg:p-6 space-y-6">
             <section id="tab-sports" class="space-y-6 max-w-5xl mx-auto">
-                
-                <!-- Banners Promocionais -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-gradient-to-br from-neutral-900 to-zinc-900 border border-brand-border/80 rounded-2xl p-5 relative overflow-hidden shadow-xl">
                         <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/20 text-brand-primary px-2.5 py-1 rounded-md">Indique e Ganhe</span>
@@ -120,7 +118,6 @@
                     </div>
                 </div>
 
-                <!-- Lista de Jogos Detalhada (Estilo Betano) -->
                 <div class="space-y-3 pt-2">
                     <div class="flex items-center justify-between border-b border-brand-border pb-3">
                         <h3 class="text-base font-black uppercase italic tracking-wider flex items-center">
@@ -131,7 +128,6 @@
                 </div>
             </section>
 
-            <!-- Seção Cassino (Mines) -->
             <section id="tab-mines" class="hidden max-w-2xl mx-auto space-y-6">
                 <div class="bg-brand-card p-6 md:p-8 rounded-2xl border border-brand-border shadow-2xl">
                     <div class="flex justify-between items-center mb-6 border-b border-brand-border pb-4">
@@ -142,33 +138,39 @@
             </section>
         </main>
 
-        <!-- Coluna Direita: Boletim -->
+        <!-- Coluna Direita: Boletim Acumulado -->
         <aside class="w-80 bg-brand-sidebar border-l border-brand-border hidden xl:flex flex-col shrink-0">
             <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
                 <h3 class="font-bold uppercase tracking-wider text-xs flex items-center text-white"><i class="fa-solid fa-receipt text-brand-primary mr-2 text-sm"></i> Boletim de Apostas</h3>
+                <span id="bet-count-badge" class="text-[10px] bg-brand-primary text-white font-bold px-2 py-0.5 rounded-full">0</span>
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
                 <div>
                     <div id="betslip" class="hidden space-y-4">
-                        <div id="betslip-content" class="bg-brand-dark p-3 rounded-xl border border-brand-border text-sm"></div>
+                        <div id="betslip-content" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                        
                         <div class="space-y-3 bg-brand-card p-4 rounded-xl border border-brand-border">
                             <div class="flex justify-between items-center text-xs text-gray-400">
-                                <span>Valor (R$):</span>
+                                <span>Valor da Aposta (R$):</span>
                                 <input type="number" id="bet-amount" value="10" min="1" oninput="updateBetReturn()" class="w-24 bg-brand-dark border border-brand-border rounded-lg px-2.5 py-1.5 text-right text-white font-bold outline-none focus:border-brand-primary">
                             </div>
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Odd Total:</span>
+                                <span id="total-odds" class="text-white font-bold">1.00</span>
+                            </div>
                             <div class="flex justify-between text-sm font-bold border-t border-brand-border pt-3">
-                                <span>Retorno:</span>
+                                <span>Retorno Potencial:</span>
                                 <span id="bet-return" class="text-brand-primary text-base">R$ 0,00</span>
                             </div>
-                            <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl transition-colors mt-2 text-xs uppercase tracking-wider shadow-lg">Fazer Aposta</button>
+                            <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl transition-colors mt-2 text-xs uppercase tracking-wider shadow-lg">Fazer Aposta Múltipla</button>
                         </div>
                     </div>
 
                     <div id="empty-betslip" class="space-y-4">
                         <div class="flex flex-col items-center justify-center text-gray-500 text-center py-12 px-4 bg-brand-card/50 rounded-xl border border-brand-border/50">
                             <i class="fa-solid fa-ticket text-4xl mb-3 opacity-30 text-brand-primary"></i>
-                            <p class="text-xs text-gray-400">O seu boletim está vazio. Clique nas cotações para apostar.</p>
+                            <p class="text-xs text-gray-400">O seu boletim está vazio. Clique em várias cotações para criar uma aposta múltipla.</p>
                         </div>
                     </div>
                 </div>
@@ -176,7 +178,7 @@
         </aside>
     </div>
 
-    <!-- Modais -->
+    <!-- Modais Completos -->
     <div id="history-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
@@ -185,123 +187,3 @@
             </div>
             <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="history-list"></div>
         </div>
-    </div>
-
-    <div id="deposit-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
-        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-base">Depositar Saldo</h3><button onclick="closeDepositModal()"><i class="fa-solid fa-xmark"></i></button></div>
-            <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary mb-4 text-center">
-            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-black py-3 rounded-xl uppercase text-xs">Gerar Pagamento</button>
-        </div>
-    </div>
-
-    <div id="auth-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
-        <div class="bg-brand-card border border-brand-border rounded-2xl p-8 w-full max-w-md shadow-2xl relative">
-            <div class="flex justify-between items-center mb-6"><h3 id="auth-title" class="font-black text-2xl uppercase italic text-white">Iniciar Sessão</h3><button onclick="closeAuthModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button></div>
-            <div class="space-y-4">
-                <div id="auth-name-container" class="hidden"><label class="text-xs text-gray-400 mb-1 block">Nome Completo</label><input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white"></div>
-                <div><label class="text-xs text-gray-400 mb-1 block">E-mail</label><input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white"></div>
-                <div><label class="text-xs text-gray-400 mb-1 block">Senha</label><input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white"></div>
-            </div>
-            <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-brand-primary text-white font-black py-3.5 rounded-xl mt-6 uppercase text-xs">Entrar</button>
-        </div>
-    </div>
-
-    <!-- Scripts -->
-    <script src="js/supabase.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/history.js"></script>
-    <script src="js/mines.js"></script>
-    <script>
-        // Motor de Jogos Integrado com Layout Detalhado (Estilo Betano)
-        let currentBet = null;
-        const detailedMatches = [
-            { id: 1, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Fluminense', away: 'Internacional', odds: { home: 1.85, draw: 3.50, away: 4.33 } },
-            { id: 2, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Santos', away: 'Palmeiras', odds: { home: 3.30, draw: 3.25, away: 2.20 } },
-            { id: 3, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'RB Bragantino', away: 'Chapecoense', odds: { home: 1.28, draw: 5.50, away: 10.00 } },
-            { id: 4, league: 'Brasil - Série A', time: '21:30', date: '28/10', home: 'Bahia', away: 'São Paulo', odds: { home: 2.05, draw: 3.50, away: 3.60 } }
-        ];
-
-        window.addEventListener('DOMContentLoaded', () => {
-            renderMatches();
-        });
-
-        function renderMatches() {
-            const list = document.getElementById('sports-list');
-            if (!list) return;
-            
-            list.innerHTML = detailedMatches.map(m => `
-                <div class="bg-brand-card hover:bg-brand-card/80 border border-brand-border rounded-xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex items-start space-x-4">
-                        <div class="text-center min-w-[55px] pt-1">
-                            <div class="text-xs font-bold text-white">${m.time}</div>
-                            <div class="text-[10px] text-gray-400">${m.date}</div>
-                        </div>
-                        <div class="space-y-1">
-                            <div class="flex items-center space-x-2 text-sm font-bold text-white"><i class="fa-solid fa-shield text-[10px] text-brand-primary"></i><span>${m.home}</span></div>
-                            <div class="flex items-center space-x-2 text-sm font-bold text-white"><i class="fa-solid fa-shield text-[10px] text-gray-500"></i><span>${m.away}</span></div>
-                            <div class="text-[10px] text-gray-400 pt-1"><i class="fa-solid fa-earth-americas text-[9px] mr-1"></i>${m.league}</div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
-                        <button onclick="addBet('${m.home} x ${m.away}', '${m.home}', ${m.odds.home})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                            <span class="text-xs text-gray-400 group-hover:text-white">1</span>
-                            <span class="text-sm font-bold text-brand-primary">${m.odds.home.toFixed(2)}</span>
-                        </button>
-                        <button onclick="addBet('${m.home} x ${m.away}', 'Empate', ${m.odds.draw})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                            <span class="text-xs text-gray-400 group-hover:text-white">X</span>
-                            <span class="text-sm font-bold text-brand-primary">${m.odds.draw.toFixed(2)}</span>
-                        </button>
-                        <button onclick="addBet('${m.home} x ${m.away}', '${m.away}', ${m.odds.away})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                            <span class="text-xs text-gray-400 group-hover:text-white">2</span>
-                            <span class="text-sm font-bold text-brand-primary">${m.odds.away.toFixed(2)}</span>
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function addBet(match, selection, odds) {
-            currentBet = { match, selection, odds: parseFloat(odds) };
-            document.getElementById('betslip-content').innerHTML = `
-                <div class="font-bold text-white mb-1">${match}</div>
-                <div class="text-xs text-gray-300 flex justify-between border-t border-brand-border pt-1">
-                    <span>Seleção: <b class="text-white">${selection}</b></span>
-                    <span class="text-brand-primary font-bold">@ ${currentBet.odds.toFixed(2)}</span>
-                </div>
-            `;
-            document.getElementById('betslip').classList.remove('hidden');
-            document.getElementById('empty-betslip').classList.add('hidden');
-            updateBetReturn();
-        }
-
-        function updateBetReturn() {
-            if (!currentBet) return;
-            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
-            document.getElementById('bet-return').innerText = `R$ ${(amount * currentBet.odds).toFixed(2)}`;
-        }
-
-        async function placeBet() {
-            if (!currentUser) return openAuthModal('login');
-            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
-            if (amount <= 0) return alert('Insira um valor válido.');
-            if (amount > userBalance) return alert('Saldo insuficiente!');
-
-            await updateBalanceInDb(userBalance - amount);
-            if (typeof registerBet === 'function') {
-                registerBet(currentBet.match, currentBet.selection, amount, (amount * currentBet.odds), 'Pendente');
-            }
-            alert(`Aposta de R$ ${amount.toFixed(2)} registada com sucesso!`);
-            document.getElementById('betslip').classList.add('hidden');
-            document.getElementById('empty-betslip').classList.remove('hidden');
-            currentBet = null;
-        }
-
-        function switchTab(tab) {
-            document.getElementById('tab-sports').classList.toggle('hidden', tab !== 'sports');
-            document.getElementById('tab-mines').classList.toggle('hidden', tab !== 'mines');
-            if (tab === 'mines' && typeof initMinesGrid === 'function') initMinesGrid();
-        }
-    </script>
-</body>
-</html>
