@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Sports - Apostas Esportivas & Cassino</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: '#00E676',
+                            dark: '#0B0E14',
+                            card: '#151921',
+                            border: '#2A2E39'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-brand-dark text-white min-h-screen font-sans flex flex-col justify-between">
+
+    <!-- Header / Navbar -->
+    <header class="bg-brand-card border-b border-brand-border sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl font-black text-brand-green tracking-wider uppercase">REAL<span class="text-white">SPORTS</span></span>
+            </div>
+
+            <!-- Saldo & Depósito -->
+            <div class="flex items-center space-x-4">
+                <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
+                    <span class="text-xs text-gray-400">Saldo:</span>
+                    <span id="user-balance" class="font-bold text-brand-green">R$ 100,00</span>
+                </div>
+                <button onclick="openDepositModal()" class="bg-brand-green hover:bg-emerald-400 text-black font-bold px-4 py-2 rounded-lg text-sm transition-all flex items-center space-x-2">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Depositar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub-Navbar / Categorias -->
+    <nav class="bg-brand-card/50 border-b border-brand-border">
+        <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto text-sm font-semibold">
+            <button onclick="switchTab('sports')" class="py-3 text-brand-green border-b-2 border-brand-green flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-football"></i> <span>Apostas Esportivas</span>
+            </button>
+            <button onclick="switchTab('mines')" class="py-3 text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-bomb"></i> <span>Mines</span>
+            </button>
+            <button onclick="switchTab('cassino')" class="py-3 text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-dice"></i> <span>Cassino</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+
+        <!-- Seção: Esportes -->
+        <section id="tab-sports" class="space-y-6">
+            <div class="bg-gradient-to-r from-emerald-900/40 to-brand-card p-6 rounded-2xl border border-brand-border flex justify-between items-center">
+                <div>
+                    <span class="bg-brand-green text-black font-black text-xs px-2 py-1 rounded uppercase">Destaque do Dia</span>
+                    <h2 class="text-2xl font-bold mt-2">Brasileirão -
