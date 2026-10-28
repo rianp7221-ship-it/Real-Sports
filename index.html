@@ -59,6 +59,10 @@
                 <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg">
                     <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
                 </button>
+                <!-- Botão cirúrgico de Meus Bilhetes adicionado no topo -->
+                <button onclick="openMyTicketsModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg">
+                    <i class="fa-solid fa-ticket mr-1.5 text-brand-primary"></i> Meus Bilhetes
+                </button>
                 <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
                     <span id="user-balance" class="font-bold text-white text-sm">R$ 0,00</span>
                 </div>
@@ -214,13 +218,28 @@
         </div>
     </div>
 
+    <!-- Modal de Meus Bilhetes Locais Adicionado -->
+    <div id="my-tickets-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
+                <h3 class="font-black text-lg uppercase italic text-white flex items-center">
+                    <i class="fa-solid fa-ticket text-brand-primary mr-2.5"></i> Meus Bilhetes Registados (Local)
+                </h3>
+                <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list">
+                <!-- Os bilhetes aparecem aqui -->
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/history.js"></script>
     <script src="js/mines.js"></script>
     <script>
-        // Motor de Jogos Integrado com Suporte a Apostas Múltiplas e Modais Ativos
+        // Motor de Jogos Integrado com Suporte a Apostas Múltiplas e Meus Bilhetes Locais
         let selectedBets = [];
         const detailedMatches = [
             { id: 1, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Fluminense', away: 'Internacional', odds: { home: 1.85, draw: 3.50, away: 4.33 } },
@@ -340,21 +359,6 @@
                 await updateBalanceInDb(userBalance - amount);
             }
             
-            let gameDescription = selectedBets.map(b => `${b.match} (${b.selection})`).join(' + ');
-            if (typeof registerBet === 'function') {
-                registerBet(`Múltipla (${selectedBets.length} jogos)`, gameDescription, amount, totalReturn, 'Pendente');
-            }
-
-            alert(`Aposta Múltipla de R$ ${amount.toFixed(2)} registada com sucesso!`);
-            selectedBets = [];
-            renderBetslip();
-        }
-
-        function switchTab(tab) {
-            document.getElementById('tab-sports').classList.toggle('hidden', tab !== 'sports');
-            document.getElementById('tab-mines').classList.toggle('hidden', tab !== 'mines');
-            if (tab === 'mines' && typeof initMinesGrid === 'function') initMinesGrid();
-        }
-    </script>
-</body>
-</html>
+            // Registo do bilhete no localStorage para a aba "Meus Bilhetes"
+            const newTicket = {
+                id: 'RS-' + Math.floor(100000 + Math.random() * 900
