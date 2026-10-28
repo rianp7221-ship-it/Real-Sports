@@ -10,18 +10,10 @@
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { 
-                extend: { 
-                    colors: { 
-                        /* Cores inspiradas na estrutura Betano (Laranja e Tons de Cinza Escuro) */
-                        brand: { primary: '#FF6B00', primaryHover: '#FF8533', dark: '#0A0A0A', card: '#1A1A1A', sidebar: '#121212', border: '#2D2D2D' } 
-                    } 
-                } 
-            }
+            theme: { extend: { colors: { brand: { primary: '#FF6B00', primaryHover: '#FF8533', dark: '#0A0A0A', card: '#1A1A1A', sidebar: '#121212', border: '#2D2D2D' } } } }
         }
     </script>
     <style>
-        /* Oculta scrollbar para um visual mais limpo */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #121212; }
         ::-webkit-scrollbar-thumb { background: #2D2D2D; border-radius: 4px; }
@@ -30,23 +22,20 @@
 </head>
 <body class="bg-brand-dark text-white h-screen font-sans flex flex-col overflow-hidden">
 
-    <!-- Top Header (Fixo) -->
+    <!-- Top Header -->
     <header class="bg-brand-sidebar border-b border-brand-border h-16 flex items-center justify-between px-4 z-50 shrink-0">
         <div class="flex items-center space-x-6">
             <span class="text-2xl font-black text-white tracking-wider uppercase flex items-center">
                 <i class="fa-solid fa-bolt text-brand-primary mr-2"></i> REAL<span class="text-brand-primary">SPORTS</span>
             </span>
-            
-            <!-- Barra de Pesquisa (Visual) -->
-            <div class="hidden md:flex items-center bg-brand-dark border border-brand-border rounded-full px-4 py-1.5 w-64">
-                <i class="fa-solid fa-magnifying-glass text-gray-400 text-sm"></i>
-                <input type="text" placeholder="Pesquisar jogos, ligas..." class="bg-transparent border-none outline-none text-sm ml-2 w-full text-white placeholder-gray-500">
-            </div>
         </div>
 
         <div class="flex items-center space-x-3">
-            <!-- Seção Usuário Logado -->
+            <!-- Usuário Logado -->
             <div id="user-logged-section" class="flex items-center space-x-3 hidden">
+                <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2 py-1.5 text-sm flex items-center transition-colors">
+                    <i class="fa-solid fa-clock-rotate-left mr-2"></i> Histórico
+                </button>
                 <div class="bg-brand-dark px-3 py-1.5 rounded border border-brand-border flex items-center space-x-2">
                     <span id="user-balance" class="font-bold text-white">R$ 0,00</span>
                 </div>
@@ -58,102 +47,59 @@
                 </button>
             </div>
 
-            <!-- Seção Visitante -->
+            <!-- Visitante -->
             <div id="user-guest-section" class="flex items-center space-x-2">
                 <button onclick="openAuthModal('login')" class="text-white hover:text-brand-primary font-bold px-4 py-2 text-sm transition-colors">Iniciar Sessão</button>
-                <button onclick="openAuthModal('signup')" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-5 py-2 rounded text-sm transition-colors shadow-lg shadow-orange-500/20">Registar</button>
+                <button onclick="openAuthModal('signup')" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-5 py-2 rounded text-sm transition-colors">Registar</button>
             </div>
         </div>
     </header>
 
     <!-- Estrutura de 3 Colunas -->
     <div class="flex flex-1 overflow-hidden">
-        
-        <!-- Coluna Esquerda: Menu Lateral -->
+        <!-- Coluna Esquerda -->
         <aside class="w-64 bg-brand-sidebar border-r border-brand-border hidden lg:flex flex-col overflow-y-auto">
             <div class="p-4">
                 <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Popular</h3>
                 <nav class="space-y-1">
-                    <button onclick="switchTab('sports')" class="w-full flex items-center justify-between text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors group">
-                        <div class="flex items-center"><i class="fa-solid fa-fire text-brand-primary w-6"></i> Ao Vivo</div>
-                        <span class="bg-brand-dark px-2 py-0.5 rounded text-xs group-hover:text-brand-primary">12</span>
-                    </button>
-                    <button onclick="switchTab('sports')" class="w-full flex items-center text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors">
-                        <i class="fa-regular fa-futbol text-gray-400 w-6"></i> Futebol Brasileiro
-                    </button>
-                    <button onclick="switchTab('sports')" class="w-full flex items-center text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors">
-                        <i class="fa-solid fa-trophy text-gray-400 w-6"></i> Liga dos Campeões
-                    </button>
+                    <button onclick="switchTab('sports')" class="w-full flex items-center text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors"><i class="fa-solid fa-fire text-brand-primary w-6"></i> Destaques</button>
                 </nav>
             </div>
-            
             <div class="p-4 border-t border-brand-border">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Cassino Exclusivo</h3>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Cassino</h3>
                 <nav class="space-y-1">
-                    <button onclick="switchTab('mines')" class="w-full flex items-center justify-between text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors group">
-                        <div class="flex items-center"><i class="fa-solid fa-bomb text-brand-primary w-6"></i> Real Mines</div>
-                        <span class="bg-brand-primary text-white px-2 py-0.5 rounded text-xs">NOVO</span>
-                    </button>
+                    <button onclick="switchTab('mines')" class="w-full flex items-center text-left px-3 py-2 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded transition-colors"><i class="fa-solid fa-bomb text-brand-primary w-6"></i> Real Mines</button>
                 </nav>
             </div>
         </aside>
 
-        <!-- Coluna Central: Conteúdo Principal -->
+        <!-- Coluna Central -->
         <main class="flex-1 bg-brand-dark overflow-y-auto p-4 lg:p-6">
-            
-            <!-- Secção Esportes -->
             <section id="tab-sports" class="space-y-6 max-w-4xl mx-auto">
-                <!-- Banner Estilo Betano -->
-                <div class="relative bg-brand-card rounded-xl overflow-hidden border border-brand-border">
-                    <div class="absolute inset-0 bg-gradient-to-r from-brand-sidebar to-transparent z-10"></div>
-                    <div class="relative z-20 p-6 lg:p-8 w-2/3">
-                        <span class="bg-brand-primary text-white text-xs font-bold px-2 py-1 rounded uppercase mb-2 inline-block">Promoção de Boas-Vindas</span>
-                        <h2 class="text-2xl md:text-3xl font-black mt-1 uppercase italic">Bônus de até R$500</h2>
-                        <p class="text-gray-400 text-sm mt-2">Dobre o seu primeiro depósito e aposte nas melhores ligas do mundo.</p>
-                        <button onclick="openAuthModal('signup')" class="mt-4 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white font-bold px-6 py-2 rounded transition-colors">Começar Agora</button>
-                    </div>
-                    <div class="absolute right-0 top-0 h-full w-1/2 opacity-30 flex items-center justify-center">
-                        <i class="fa-solid fa-futbol text-9xl"></i>
-                    </div>
-                </div>
-
                 <div class="flex items-center justify-between border-b border-brand-border pb-2">
                     <h3 class="text-lg font-bold flex items-center"><i class="fa-solid fa-clock text-brand-primary mr-2"></i> Partidas em Destaque</h3>
-                    <div class="text-sm text-gray-400">Ver todas <i class="fa-solid fa-chevron-right text-xs ml-1"></i></div>
                 </div>
-
-                <!-- A lista de jogos será injetada aqui pelo sports.js -->
                 <div id="sports-list" class="grid grid-cols-1 gap-3"></div>
             </section>
 
-            <!-- Secção Mines -->
             <section id="tab-mines" class="hidden max-w-2xl mx-auto space-y-6">
                 <div class="bg-brand-card p-6 md:p-8 rounded-xl border border-brand-border shadow-2xl">
                     <div class="flex justify-between items-center mb-6 border-b border-brand-border pb-4">
-                        <h2 class="text-2xl font-black flex items-center uppercase italic">
-                            <i class="fa-solid fa-bomb text-brand-primary mr-3 text-3xl"></i> Real Mines
-                        </h2>
-                        <span class="bg-brand-dark px-3 py-1 rounded text-sm text-gray-400 border border-brand-border">RTP 95%</span>
+                        <h2 class="text-2xl font-black flex items-center uppercase italic"><i class="fa-solid fa-bomb text-brand-primary mr-3 text-3xl"></i> Real Mines</h2>
                     </div>
-                    <!-- O tabuleiro será injetado aqui pelo mines.js -->
                     <div id="mines-grid" class="w-full"></div> 
                 </div>
             </section>
-
         </main>
 
-        <!-- Coluna Direita: Boletim de Apostas Fixo -->
+        <!-- Coluna Direita (Boletim) -->
         <aside class="w-80 bg-brand-sidebar border-l border-brand-border hidden xl:flex flex-col shrink-0">
             <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
                 <h3 class="font-bold uppercase tracking-wide flex items-center"><i class="fa-solid fa-receipt text-gray-400 mr-2"></i> Boletim de Apostas</h3>
-                <span class="bg-brand-primary text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">1</span>
             </div>
-            
             <div class="flex-1 overflow-y-auto p-4 flex flex-col">
-                <!-- O conteúdo da aposta entra aqui -->
                 <div id="betslip" class="hidden flex-1 flex flex-col">
                     <div id="betslip-content" class="bg-brand-dark p-3 rounded border border-brand-border text-sm mb-4"></div>
-                    
                     <div class="mt-auto space-y-3 bg-brand-card p-4 rounded border border-brand-border">
                         <div class="flex justify-between items-center text-sm text-gray-400">
                             <span>Valor da Aposta (R$):</span>
@@ -166,32 +112,35 @@
                         <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3 rounded transition-colors mt-2 text-sm uppercase">Fazer Aposta</button>
                     </div>
                 </div>
-                
                 <div id="empty-betslip" class="flex-1 flex flex-col items-center justify-center text-gray-500 text-center px-4">
                     <i class="fa-solid fa-ticket text-4xl mb-3 opacity-20"></i>
                     <p class="text-sm">O seu boletim de apostas está vazio.</p>
-                    <p class="text-xs mt-1">Clique nas odds para adicionar seleções.</p>
                 </div>
             </div>
         </aside>
-
     </div>
 
-    <!-- Modais UI (Depósito e Auth) -->
+    <!-- Modal Histórico de Apostas -->
+    <div id="history-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-xl">
+                <h3 class="font-black text-xl uppercase italic text-white flex items-center">
+                    <i class="fa-solid fa-clock-rotate-left text-brand-primary mr-3"></i> O Meu Histórico
+                </h3>
+                <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="history-list">
+                <!-- Apostas injetadas aqui -->
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Depósito -->
     <div id="deposit-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-xl p-6 w-full max-w-sm shadow-2xl">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">Depositar Saldo</h3>
-                <button onclick="closeDepositModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">Valor (R$)</label>
-                    <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary">
-                </div>
-                <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-bold py-3 rounded transition-colors uppercase text-sm">Gerar Pagamento</button>
-            </div>
+            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg">Depositar Saldo</h3><button onclick="closeDepositModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary mb-4">
+            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-bold py-3 rounded uppercase text-sm">Gerar Pagamento</button>
         </div>
     </div>
 
@@ -199,46 +148,20 @@
     <div id="auth-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-xl p-8 w-full max-w-md shadow-2xl relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-1 bg-brand-primary"></div>
-            <div class="flex justify-between items-center mb-6">
-                <h3 id="auth-title" class="font-black text-2xl uppercase italic text-white">Iniciar Sessão</h3>
-                <button onclick="closeAuthModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+            <div class="flex justify-between items-center mb-6"><h3 id="auth-title" class="font-black text-2xl uppercase italic text-white">Iniciar Sessão</h3><button onclick="closeAuthModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="space-y-4">
-                <div id="auth-name-container" class="hidden">
-                    <label class="text-xs text-gray-400 mb-1 block">Nome Completo</label>
-                    <input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary transition-colors">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">E-mail</label>
-                    <input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary transition-colors">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-400 mb-1 block">Senha</label>
-                    <input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary transition-colors">
-                </div>
+                <div id="auth-name-container" class="hidden"><label class="text-xs text-gray-400 mb-1 block">Nome Completo</label><input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary"></div>
+                <div><label class="text-xs text-gray-400 mb-1 block">E-mail</label><input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary"></div>
+                <div><label class="text-xs text-gray-400 mb-1 block">Senha</label><input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded px-3 py-3 text-white outline-none focus:border-brand-primary"></div>
             </div>
-            <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3.5 rounded mt-6 transition-colors uppercase tracking-wide">Entrar</button>
+            <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-bold py-3.5 rounded mt-6 uppercase tracking-wide">Entrar</button>
         </div>
     </div>
-
-    <!-- Modificação no sports.js para ocultar a mensagem de boletim vazio -->
-    <script>
-        // Intercepta a função original para gerir o visual do boletim da coluna direita
-        const originalAddBet = addBet;
-        addBet = function(match, selection, odds) {
-            originalAddBet(match, selection, odds);
-            document.getElementById('empty-betslip').classList.add('hidden');
-        };
-        const originalCloseBetSlip = closeBetSlip;
-        closeBetSlip = function() {
-            originalCloseBetSlip();
-            document.getElementById('empty-betslip').classList.remove('hidden');
-        };
-    </script>
 
     <!-- Scripts da Arquitetura Modular -->
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
+    <script src="js/history.js"></script>
     <script src="js/sports.js"></script>
     <script src="js/mines.js"></script>
 </body>
