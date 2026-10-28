@@ -6,25 +6,258 @@
     <title>Real Sports - Apostas Esportivas & Cassino</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Supabase JS Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase JS Bundle confiável -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        brand: {
-                            green: '#00E676',
-                            dark: '#0B0E14',
-                            card: '#151921',
-                            border: '#2A2E39'
-                        }
+                        brand: { green: '#00E676', dark: '#0B0E14', card: '#151921', border: '#2A2E39' }
                     }
                 }
             }
         }
     </script>
+</head>
+<body class="bg-brand-dark text-white min-h-screen font-sans flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="bg-brand-card border-b border-brand-border sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <span class="text-2xl font-black text-brand-green tracking-wider uppercase">REAL<span class="text-white">SPORTS</span></span>
+
+            <div class="flex items-center space-x-3">
+                <div id="user-logged-section" class="flex items-center space-x-3 hidden">
+                    <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
+                        <span class="text-xs text-gray-400">Saldo:</span>
+                        <span id="user-balance" class="font-bold text-brand-green">R$ 0,00</span>
+                    </div>
+                    <button onclick="openDepositModal()" class="bg-brand-green hover:bg-emerald-400 text-black font-bold px-3 py-1.5 rounded-lg text-sm transition-all flex items-center space-x-1">
+                        <i class="fa-solid fa-wallet"></i> <span>Depositar</span>
+                    </button>
+                    <button onclick="logout()" class="text-gray-400 hover:text-white p-2 text-sm" title="Sair">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+
+                <div id="user-guest-section" class="flex items-center space-x-2">
+                    <button onclick="openAuthModal('login')" class="bg-brand-dark hover:border-brand-green border border-brand-border text-white font-bold px-4 py-2 rounded-lg text-sm">Entrar</button>
+                    <button onclick="openAuthModal('signup')" class="bg-brand-green hover:bg-emerald-400 text-black font-bold px-4 py-2 rounded-lg text-sm">Cadastrar</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub-Navbar -->
+    <nav class="bg-brand-card/50 border-b border-brand-border">
+        <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto text-sm font-semibold">
+            <button onclick="switchTab('sports')" class="py-3 text-brand-green border-b-2 border-brand-green flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-football"></i> <span>Apostas Esportivas</span>
+            </button>
+            <button onclick="switchTab('mines')" class="py-3 text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-bomb"></i> <span>Mines</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+        <section id="tab-sports" class="space-y-6">
+            <div class="bg-gradient-to-r from-emerald-900/40 to-brand-card p-6 rounded-2xl border border-brand-border">
+                <span class="bg-brand-green text-black font-black text-xs px-2 py-1 rounded uppercase">Destaque do Dia</span>
+                <h2 class="text-2xl font-bold mt-2">Brasileirão - Série A</h2>
+                <p class="text-gray-400 text-sm">Aposte ao vivo no Real Sports!</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4">
+                    <div class="flex justify-between items-center text-xs text-gray-400">
+                        <span><i class="fa-solid fa-circle text-red-500 animate-pulse mr-1"></i> Ao Vivo</span>
+                        <span>Futebol</span>
+                    </div>
+                    <div class="flex justify-between items-center font-bold text-lg">
+                        <span>Flamengo</span>
+                        <span class="text-brand-green">2 - 1</span>
+                        <span>Palmeiras</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="addBet('Flamengo x Palmeiras', 'Flamengo', 1.85)" class="bg-brand-dark border border-brand-border p-2 rounded text-center">
+                            <div class="text-xs text-gray-400">1</div><div class="font-bold text-brand-green">1.85</div>
+                        </button>
+                        <button onclick="addBet('Flamengo x Palmeiras', 'Empate', 3.20)" class="bg-brand-dark border border-brand-border p-2 rounded text-center">
+                            <div class="text-xs text-gray-400">X</div><div class="font-bold text-brand-green">3.20</div>
+                        </button>
+                        <button onclick="addBet('Flamengo x Palmeiras', 'Palmeiras', 4.10)" class="bg-brand-dark border border-brand-border p-2 rounded text-center">
+                            <div class="text-xs text-gray-400">2</div><div class="font-bold text-brand-green">4.10</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-mines" class="hidden max-w-md mx-auto space-y-6">
+            <div class="bg-brand-card p-6 rounded-2xl border border-brand-border text-center space-y-4">
+                <h2 class="text-xl font-bold flex items-center justify-center space-x-2">
+                    <i class="fa-solid fa-bomb text-brand-green"></i> <span>Real Mines</span>
+                </h2>
+                <div id="mines-grid" class="grid grid-cols-5 gap-2 my-4"></div>
+                <div class="flex space-x-2">
+                    <input type="number" id="mines-amount" value="10" min="1" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white font-bold text-center">
+                    <button onclick="startMines()" class="bg-brand-green text-black font-bold px-6 py-2 rounded-lg w-full">Apostar</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Autenticação -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 id="auth-title" class="font-bold text-lg">Entrar</h3>
+                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div id="auth-name-container" class="hidden space-y-1">
+                    <label class="text-xs text-gray-400">Nome Completo</label>
+                    <input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400">E-mail</label>
+                    <input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs text-gray-400">Senha (Mínimo 6 caracteres)</label>
+                    <input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
+                </div>
+            </div>
+            <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-brand-green text-black font-bold py-2.5 rounded-lg">Entrar</button>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_xH3OeSXlZu07ue1PwImKyw_6cGkC9Fu';
+        
+        // Inicialização global limpa
+        const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUser = null;
+        let userBalance = 0.00;
+        let authMode = 'login';
+
+        window.onload = async () => {
+            try {
+                const { data: { user } } = await _supabase.auth.getUser();
+                if (user) {
+                    currentUser = user;
+                    await loadUserProfile();
+                }
+            } catch(err) {
+                console.log("Erro na verificação de sessão:", err);
+            }
+            updateAuthUI();
+        };
+
+        function updateAuthUI() {
+            if (currentUser) {
+                document.getElementById('user-logged-section').classList.remove('hidden');
+                document.getElementById('user-guest-section').classList.add('hidden');
+                document.getElementById('user-balance').innerText = `R$ ${userBalance.toFixed(2)}`;
+            } else {
+                document.getElementById('user-logged-section').classList.add('hidden');
+                document.getElementById('user-guest-section').classList.remove('hidden');
+            }
+        }
+
+        async function loadUserProfile() {
+            if (!currentUser) return;
+            const { data, error } = await _supabase
+                .from('profiles')
+                .select('balance')
+                .eq('id', currentUser.id)
+                .single();
+
+            if (data) {
+                userBalance = parseFloat(data.balance);
+                updateAuthUI();
+            }
+        }
+
+        function openAuthModal(mode) {
+            authMode = mode;
+            document.getElementById('auth-modal').classList.remove('hidden');
+            if (mode === 'signup') {
+                document.getElementById('auth-title').innerText = 'Criar Conta';
+                document.getElementById('auth-name-container').classList.remove('hidden');
+                document.getElementById('auth-submit-btn').innerText = 'Cadastrar';
+            } else {
+                document.getElementById('auth-title').innerText = 'Entrar no Real Sports';
+                document.getElementById('auth-name-container').classList.add('hidden');
+                document.getElementById('auth-submit-btn').innerText = 'Entrar';
+            }
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        async function submitAuth() {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+            const fullName = document.getElementById('auth-name').value;
+
+            if (!email || !password) return alert('Por favor, preencha e-mail e senha.');
+
+            if (authMode === 'signup') {
+                const { data, error } = await _supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: fullName } }
+                });
+
+                if (error) {
+                    alert('Erro no cadastro: ' + error.message);
+                } else {
+                    alert('Conta criada com sucesso! Faça login para jogar.');
+                    openAuthModal('login');
+                }
+            } else {
+                const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    alert('Erro no login: ' + error.message);
+                } else {
+                    currentUser = data.user;
+                    await loadUserProfile();
+                    closeAuthModal();
+                }
+            }
+        }
+
+        async function logout() {
+            await _supabase.auth.signOut();
+            currentUser = null;
+            userBalance = 0;
+            updateAuthUI();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('tab-sports').classList.add('hidden');
+            document.getElementById('tab-mines').classList.add('hidden');
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            if(tab === 'mines') initMinesGrid();
+        }
+
+        function initMinesGrid() {
+            const grid = document.getElementById('mines-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<25; i++) {
+                grid.innerHTML += `<button class="h-12 bg-brand-dark rounded-lg border border-brand-border flex items-center justify-center font-bold text-lg" disabled></button>`;
+            }
+        }
+    </script>
+</body>
+</html>
 </head>
 <body class="bg-brand-dark text-white min-h-screen font-sans flex flex-col justify-between">
 
