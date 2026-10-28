@@ -1,72 +1,52 @@
-// js/history.js - Módulo de Histórico de Apostas
+// --- ADIÇÃO CIRÚRGICA: Gestão de Bilhetes Locais ---
+function renderMyLocalTickets() {
+    const historyList = document.getElementById('history-list');
+    if (!historyList) return;
 
-function openHistoryModal() {
-    if (!currentUser) return openAuthModal('login');
-    document.getElementById('history-modal').classList.remove('hidden');
-    renderHistory();
-}
+    let localTickets = JSON.parse(localStorage.getItem('real_sports_tickets') || '[]');
 
-function closeHistoryModal() {
-    document.getElementById('history-modal').classList.add('hidden');
-}
-
-// Guarda a aposta associada ao ID único do utilizador
-function registerBet(game, selection, amount, returnAmount, status) {
-    if (!currentUser) return;
-    const storageKey = 'realsports_bets_' + currentUser.id;
-    let bets = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    
-    bets.unshift({
-        game,
-        selection,
-        amount,
-        returnAmount,
-        status,
-        date: new Date().toLocaleDateString('pt-BR') + ' às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-    });
-
-    localStorage.setItem(storageKey, JSON.stringify(bets));
-}
-
-// Desenha a lista no modal
-function renderHistory() {
-    const listEl = document.getElementById('history-list');
-    if (!listEl) return;
-    
-    const storageKey = 'realsports_bets_' + currentUser.id;
-    let bets = JSON.parse(localStorage.getItem(storageKey) || '[]');
-
-    if (bets.length === 0) {
-        listEl.innerHTML = `
-            <div class="flex flex-col items-center justify-center text-gray-500 py-12">
-                <i class="fa-solid fa-receipt text-5xl mb-4 opacity-20"></i>
-                <p>Ainda não efetuaste nenhuma aposta.</p>
-            </div>
-        `;
-        return;
+    if (localTickets.length === 0) {
+        return; // Mantém o histórico original intocado se não houver bilhetes locais
     }
 
-    listEl.innerHTML = bets.map(bet => {
-        let statusColor = bet.status === 'Ganha' ? 'text-green-500' : 
-                          bet.status === 'Perdida' ? 'text-red-500' : 'text-amber-500';
-        let returnText = bet.status === 'Perdida' ? 'R$ 0.00' : `R$ ${bet.returnAmount.toFixed(2)}`;
-        let lineThrough = bet.status === 'Perdida' ? 'line-through text-gray-500' : 'text-brand-primary';
-        
-        return `
-            <div class="bg-brand-card border border-brand-border rounded-lg p-4 flex flex-col md:flex-row md:justify-between md:items-center">
-                <div>
-                    <div class="flex items-center space-x-2 mb-2">
-                        <span class="text-xs text-gray-400"><i class="fa-regular fa-clock"></i> ${bet.date}</span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${statusColor} bg-brand-dark border border-brand-border">${bet.status}</span>
+    // Adiciona os bilhetes locais ao histórico existente
+    const localHtml = localTickets.map(t => `
+        <div class="bg-brand-dark border border-brand-border rounded-xl p-4 space-y-3 shadow-md relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-1 h-full bg-brand-primary"></div>
+            <div class="flex justify-between items-center text-xs border-b border-brand-border pb-2">
+                <span class="font-bold text-white"><i class="fa-solid fa-hashtag text-brand-primary mr-1"></i>${t.id} (Local)</span>
+                <span class="text-gray-400">${t.date}</span>
+            </div>
+            <div class="space-y-1">
+                ${t.bets.map(b => `
+                    <div class="text-xs flex justify-between text-gray-300">
+                        <span>${b.match} -> <b class="text-white">${b.selection}</b></span>
+                        <span class="text-brand-primary font-bold">@ ${b.odds.toFixed(2)}</span>
                     </div>
-                    <h4 class="font-bold text-white text-md">${bet.game}</h4>
-                    <p class="text-xs text-gray-400 mt-1">Seleção: <span class="text-white">${bet.selection}</span></p>
+                `).join('')}
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-brand-border text-xs">
+                <div>
+                    <span class="text-gray-400">Aposta: </span><b class="text-white">R$ ${t.amount.toFixed(2)}</b> | 
+                    <span class="text-gray-400">Odd: </span><b class="text-white">${t.totalOdds.toFixed(2)}</b>
                 </div>
-                <div class="mt-3 md:mt-0 text-left md:text-right border-t md:border-t-0 border-brand-border pt-3 md:pt-0 min-w-[120px]">
-                    <div class="text-xs text-gray-400">Aposta: <span class="text-white font-bold">R$ ${bet.amount.toFixed(2)}</span></div>
-                    <div class="text-sm mt-1">Retorno: <span class="font-bold ${lineThrough}">${returnText}</span></div>
+                <div>
+                    <span class="text-gray-400">Retorno: </span><b class="text-brand-primary">R$ ${t.totalReturn.toFixed(2)}</b>
+                    <span class="ml-2 px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 font-bold">${t.status}</span>
                 </div>
             </div>
-        `;
-    }).join('');
+        </div>
+    `).join('');
+
+    historyList.innerHTML = localHtml + historyList.innerHTML;
 }
+
+// Executa automaticamente ao abrir o modal de histórico
+document.addEventListener('DOMContentLoaded', () => {
+    const originalOpenHistory = window.openHistoryModal;
+    // Se quiseres que carregue sempre que o histórico abrir:
+    window.openHistoryModal = function() {
+        if (typeof originalOpenHistory === 'function') originalOpenHistory();
+        renderMyLocalTickets();
+    };
+});
