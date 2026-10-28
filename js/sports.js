@@ -156,6 +156,4 @@ async function placeBet() {
 
     alert(`Aposta de R$ ${amount.toFixed(2)} registada com sucesso!`);
     closeBetSlip();
-}osta de R$ ${amount.toFixed(2)} registada com sucesso!`);
-    closeBetSlip();
 }
