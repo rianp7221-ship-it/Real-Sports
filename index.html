@@ -222,12 +222,12 @@
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
                 <h3 class="font-black text-lg uppercase italic text-white flex items-center">
-                    <i class="fa-solid fa-ticket text-brand-primary mr-2.5"></i> Meus Bilhetes Registados (Local)
+                    <i class="fa-solid fa-ticket text-brand-primary mr-2.5"></i> Meus Bilhetes Registados
                 </h3>
-                <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list">
-                <!-- Os bilhetes aparecem aqui -->
+                <!-- Os bilhetes feitos aparecem aqui dinamicamente -->
             </div>
         </div>
     </div>
@@ -237,8 +237,9 @@
     <script src="js/auth.js"></script>
     <script src="js/history.js"></script>
     <script src="js/mines.js"></script>
+    <script src="js/sports.js"></script>
     <script>
-        // Motor de Jogos Integrado com Suporte a Apostas Múltiplas e Meus Bilhetes Locais
+        // Motor de Jogos e Gestão de Bilhetes Locais
         let selectedBets = [];
         const detailedMatches = [
             { id: 1, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Fluminense', away: 'Internacional', odds: { home: 1.85, draw: 3.50, away: 4.33 } },
@@ -272,15 +273,15 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
-                        <button onclick="toggleBet('${m.id}', '${m.home} x${m.away}', '${m.home}',${m.odds.home})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
+                        <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', '${m.home}', ${m.odds.home})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
                             <span class="text-xs text-gray-400 group-hover:text-white">1</span>
                             <span class="text-sm font-bold text-brand-primary">${m.odds.home.toFixed(2)}</span>
                         </button>
-                        <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', 'Empate',${m.odds.draw})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
+                        <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', 'Empate', ${m.odds.draw})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
                             <span class="text-xs text-gray-400 group-hover:text-white">X</span>
                             <span class="text-sm font-bold text-brand-primary">${m.odds.draw.toFixed(2)}</span>
                         </button>
-                        <button onclick="toggleBet('${m.id}', '${m.home} x${m.away}', '${m.away}',${m.odds.away})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
+                        <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', '${m.away}', ${m.odds.away})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
                             <span class="text-xs text-gray-400 group-hover:text-white">2</span>
                             <span class="text-sm font-bold text-brand-primary">${m.odds.away.toFixed(2)}</span>
                         </button>
@@ -340,28 +341,13 @@
 
             const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
             const betReturnEl = document.getElementById('bet-return');
-            if (betReturnEl) betReturnEl.innerText = `R$ ${(amount * totalOdds).toFixed(2)}`; }  async function placeBet() { if (typeof currentUser !== 'undefined' && !currentUser) return openAuthModal('login'); if (selectedBets.length === 0) return alert('Selecione pelo menos um jogo.');  const amount = parseFloat(document.getElementById('bet-amount').value) \vert{}\vert{} 0; if (amount <= 0) return alert('Insira um valor válido.'); if (typeof userBalance !== 'undefined' && amount > userBalance) return alert('Saldo insuficiente!');  let totalOdds = selectedBets.reduce((acc, b) => acc * b.odds, 1); let totalReturn = amount * totalOdds;  if (typeof updateBalanceInDb === 'function') { await updateBalanceInDb(userBalance - amount); }  // Registo do bilhete no localStorage para a aba "Meus Bilhetes" const newTicket = { id: 'RS-' + Math.floor(100000 + Math.random() * 900000), date: new Date().toLocaleString('pt-BR'), bets: [...selectedBets], amount: amount, totalOdds: totalOdds, totalReturn: totalReturn, status: 'Pendente' }; let localTickets = JSON.parse(localStorage.getItem('real_sports_tickets') \vert{}\vert{} '[]'); localTickets.unshift(newTicket); localStorage.setItem('real_sports_tickets', JSON.stringify(localTickets));  let gameDescription = selectedBets.map(b => `${b.match} (${b.selection})`).join(' + '); if (typeof registerBet === 'function') { registerBet(`Múltipla (${selectedBets.length} jogos)`, gameDescription, amount, totalReturn, 'Pendente');
-            }
-
-            alert(`Aposta Múltipla de R$ ${amount.toFixed(2)} registada com sucesso!`);
-            selectedBets = [];
-            renderBetslip();
+            if (betReturnEl) betReturnEl.innerText = `R$ ${(amount * totalOdds).toFixed(2)}`;
         }
 
-        function switchTab(tab) {
-            document.getElementById('tab-sports').classList.toggle('hidden', tab !== 'sports');
-            document.getElementById('tab-mines').classList.toggle('hidden', tab !== 'mines');
-            if (tab === 'mines' && typeof initMinesGrid === 'function') initMinesGrid();
-        }
+        async function placeBet() {
+            if (typeof currentUser !== 'undefined' && !currentUser) return openAuthModal('login');
+            if (selectedBets.length === 0) return alert('Selecione pelo menos um jogo.');
 
-        // Funções para abrir e fechar o Modal de Meus Bilhetes
-        function openMyTicketsModal() {
-            const modal = document.getElementById('my-tickets-modal');
-            const list = document.getElementById('my-tickets-modal-list');
-            if (!modal || !list) return;
-
-            let localTickets = JSON.parse(localStorage.getItem('real_sports_tickets') || '[]');
-
-            if (localTickets.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-12 text-gray-500 bg-brand-dark rounded-xl border border-brand-border
+            const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+            if (amount <= 0) return alert('Insira um valor válido.');
+            if (typeof userBalance
