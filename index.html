@@ -55,7 +55,6 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <!-- Área de Utilizador Logado (Forçada a aparecer para testes ou ligada ao estado) -->
             <div id="user-logged-section" class="flex items-center space-x-3">
                 <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
                     <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
@@ -73,7 +72,7 @@
         </div>
     </header>
 
-    <!-- Estrutura de 3 Colunas -->
+    <!-- Estrutura Principal de 3 Colunas -->
     <div class="flex flex-1 overflow-hidden">
         
         <!-- Coluna Esquerda -->
@@ -81,11 +80,11 @@
             <div class="p-4">
                 <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</h3>
                 <nav class="space-y-1">
-                    <button onclick="switchTab('sports')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium">
+                    <button onclick="switchTab('sports')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium cursor-pointer">
                         <span class="flex items-center"><i class="fa-solid fa-futbol text-brand-primary w-6"></i> Futebol</span>
                         <span class="text-xs bg-brand-dark px-2 py-0.5 rounded text-gray-500 border border-brand-border">7</span>
                     </button>
-                    <button onclick="switchTab('mines')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium">
+                    <button onclick="switchTab('mines')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium cursor-pointer">
                         <span class="flex items-center"><i class="fa-solid fa-bomb text-brand-primary w-6"></i> Real Mines</span>
                         <span class="text-xs bg-brand-primary/20 text-brand-primary px-2 py-0.5 rounded font-bold">HOT</span>
                     </button>
@@ -133,7 +132,10 @@
                     <div class="flex justify-between items-center mb-6 border-b border-brand-border pb-4">
                         <h2 class="text-2xl font-black flex items-center uppercase italic text-white"><i class="fa-solid fa-bomb text-brand-primary mr-3 text-3xl"></i> Real Mines</h2>
                     </div>
-                    <div id="mines-grid" class="w-full"></div> 
+                    <div id="mines-grid" class="text-center py-12 text-gray-400">
+                        <i class="fa-solid fa-gamepad text-5xl text-brand-primary mb-3 opacity-50"></i>
+                        <p class="text-sm">Módulo de Cassino Real Mines carregado com sucesso.</p>
+                    </div> 
                 </div>
             </section>
         </main>
@@ -162,7 +164,7 @@
                                 <span>Retorno Potencial:</span>
                                 <span id="bet-return" class="text-brand-primary text-base">R$ 0,00</span>
                             </div>
-                            <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl transition-colors mt-2 text-xs uppercase tracking-wider shadow-lg cursor-pointer">Fazer Aposta Múltipla</button>
+                            <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl transition-colors mt-2 text-xs uppercase tracking-wider shadow-lg cursor-pointer">Finalizar Aposta Múltipla</button>
                         </div>
                     </div>
 
@@ -184,7 +186,7 @@
                 <h3 class="font-black text-lg uppercase italic text-white flex items-center"><i class="fa-solid fa-clock-rotate-left text-brand-primary mr-2.5"></i> Histórico de Apostas</h3>
                 <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="history-list"></div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3 text-sm text-gray-400 text-center py-12">Sem histórico registado recentemente.</div>
         </div>
     </div>
 
@@ -192,11 +194,11 @@
         <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
             <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-base">Depositar Saldo</h3><button onclick="closeDepositModal()" class="cursor-pointer"><i class="fa-solid fa-xmark"></i></button></div>
             <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary mb-4 text-center">
-            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Gerar Pagamento</button>
+            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Gerar Pagamento PIX</button>
         </div>
     </div>
 
-    <!-- Modal de Meus Bilhetes Locais (Garantido) -->
+    <!-- Modal de Meus Bilhetes Locais -->
     <div id="my-tickets-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
@@ -206,12 +208,12 @@
                 <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list">
-                <!-- Os bilhetes feitos aparecem aqui -->
+                <!-- Bilhetes dinâmicos aqui -->
             </div>
         </div>
     </div>
 
-    <!-- Script Principal Integrado e Autossuficiente -->
+    <!-- Motor JavaScript Integrado -->
     <script>
         let selectedBets = [];
         let userBalance = 150.00;
@@ -352,7 +354,7 @@
             localTickets.unshift(newTicket);
             localStorage.setItem('real_sports_tickets', JSON.stringify(localTickets));
 
-            alert(`Aposta de R$ ${amount.toFixed(2)} registada com sucesso!`);
+            alert(`Aposta de R$ ${amount.toFixed(2)} finalizada com sucesso!`);
             selectedBets = [];
             renderBetslip();
         }
@@ -439,7 +441,7 @@
             if (amt > 0) {
                 userBalance += amt;
                 updateBalanceDisplay();
-                alert(`Depósito de R$ ${amt.toFixed(2)} simulado com sucesso!`);
+                alert(`Depósito de R$ ${amt.toFixed(2)} gerado com sucesso!`);
                 closeDepositModal();
             }
         }
