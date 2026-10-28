@@ -8,7 +8,7 @@ let matchesData = [];
 // 2. Muda USE_REAL_API para true
 // 3. Cola a tua chave em API_KEY
 const USE_REAL_API = false; 
-const API_KEY = "COLA_A_TUA_CHAVE_AQUI"; 
+const API_KEY = "219415e7d2ff117cc0e96919766c5479"; 
 
 // Carrega os jogos assim que o ecrã abre
 window.addEventListener('DOMContentLoaded', loadAndRenderMatches);
