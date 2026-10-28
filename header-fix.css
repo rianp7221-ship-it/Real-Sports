@@ -1,0 +1,30 @@
+/* =================================================_
+   Correção de Layout e Área Segura para Mobile (Header)
+   ================================================= */
+
+/* Garante que qualquer cabeçalho ou barra de topo respeite o entalhe/ilha dinâmica do telemóvel */
+header, 
+.header-sports, 
+[class*="header"] {
+  padding-top: max(18px, env(safe-area-inset-top)) !important;
+  box-sizing: border-box !important;
+}
+
+/* Alinhamento flexível padrão para evitar que os botões subam demais */
+.header-sports, 
+header {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+}
+
+/* Espaçamento interno seguro para os lados */
+body header {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  padding-bottom: 12px !important;
+}
