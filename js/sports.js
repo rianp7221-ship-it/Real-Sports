@@ -7,7 +7,7 @@ let matchesData = [];
 // 1. Cria conta em: https://www.api-football.com/
 // 2. Muda USE_REAL_API para true
 // 3. Cola a tua chave em API_KEY
-const USE_REAL_API = false; 
+const USE_REAL_API = true; 
 const API_KEY = "219415e7d2ff117cc0e96919766c5479"; 
 
 // Carrega os jogos assim que o ecrã abre
