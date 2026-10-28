@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Sports - Apostas Esportivas</title>
+    <title>Real Sports - Plataforma de Apostas Esportivas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -75,7 +74,7 @@
     <!-- Estrutura Principal de 3 Colunas -->
     <div class="flex flex-1 overflow-hidden">
         
-        <!-- Coluna Esquerda -->
+        <!-- Coluna Esquerda: Menu de Esportes -->
         <aside class="w-64 bg-brand-sidebar border-r border-brand-border hidden lg:flex flex-col overflow-y-auto">
             <div class="p-4">
                 <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</h3>
@@ -92,7 +91,7 @@
             </div>
         </aside>
 
-        <!-- Coluna Central -->
+        <!-- Coluna Central: Jogos / Conteúdo -->
         <main class="flex-1 bg-brand-dark overflow-y-auto p-4 lg:p-6 space-y-6">
             <section id="tab-sports" class="space-y-6 max-w-5xl mx-auto">
                 
@@ -134,13 +133,13 @@
                     </div>
                     <div id="mines-grid" class="text-center py-12 text-gray-400">
                         <i class="fa-solid fa-gamepad text-5xl text-brand-primary mb-3 opacity-50"></i>
-                        <p class="text-sm">Módulo de Cassino Real Mines carregado com sucesso.</p>
+                        <p class="text-sm">Módulo de Cassino Real Mines pronto para uso.</p>
                     </div> 
                 </div>
             </section>
         </main>
 
-        <!-- Coluna Direita: Boletim Acumulado -->
+        <!-- Coluna Direita: Boletim de Apostas -->
         <aside class="w-80 bg-brand-sidebar border-l border-brand-border hidden xl:flex flex-col shrink-0">
             <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
                 <h3 class="font-bold uppercase tracking-wider text-xs flex items-center text-white"><i class="fa-solid fa-receipt text-brand-primary mr-2 text-sm"></i> Boletim de Apostas</h3>
@@ -179,14 +178,14 @@
         </aside>
     </div>
 
-    <!-- Modais -->
+    <!-- Modais do Sistema -->
     <div id="history-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
                 <h3 class="font-black text-lg uppercase italic text-white flex items-center"><i class="fa-solid fa-clock-rotate-left text-brand-primary mr-2.5"></i> Histórico de Apostas</h3>
                 <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3 text-sm text-gray-400 text-center py-12">Sem histórico registado recentemente.</div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3 text-sm text-gray-400 text-center py-12">Nenhuma atividade recente registada no histórico.</div>
         </div>
     </div>
 
@@ -198,7 +197,6 @@
         </div>
     </div>
 
-    <!-- Modal de Meus Bilhetes Locais -->
     <div id="my-tickets-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
@@ -207,13 +205,11 @@
                 </h3>
                 <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list">
-                <!-- Bilhetes dinâmicos aqui -->
-            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list"></div>
         </div>
     </div>
 
-    <!-- Motor JavaScript Integrado -->
+    <!-- Script de Gestão Integrado -->
     <script>
         let selectedBets = [];
         let userBalance = 150.00;
@@ -445,6 +441,9 @@
                 closeDepositModal();
             }
         }
+    </script>
+</body>
+</html>
     </script>
 </body>
 </html>
