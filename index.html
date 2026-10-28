@@ -435,16 +435,15 @@
 
         function simulateDeposit() {
             const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
-            if (amt > 0) {
-                userBalance += amt;
-                updateBalanceDisplay();
-                alert(`Depósito de R$ ${amt.toFixed(2)} gerado com sucesso!`);
-                closeDepositModal();
-            }
-        }
-    </script>
-</body>
-</html>
-    </script>
+                  if (amt > 0) {
+        userBalance += amt;
+        updateBalanceDisplay();
+        alert(`Depósito de R$ ${amt.toFixed(2)} realizado com sucesso!`);
+        closeDepositModal();
+      }
+    }
+  </script>
+
+  <script src="js/auth-header.js"></script>
 </body>
 </html>
