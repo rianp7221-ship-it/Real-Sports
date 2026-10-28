@@ -1,8 +1,8 @@
+// js/auth.js - Autenticação e Gestão de Utilizador
 let currentUser = null;
 let userBalance = 0.00;
 let authMode = 'login';
 
-// Verificar sessão ao carregar a página
 window.addEventListener('DOMContentLoaded', async () => {
     try {
         const { data: { user } } = await _supabase.auth.getUser();
@@ -11,23 +11,23 @@ window.addEventListener('DOMContentLoaded', async () => {
             await loadUserProfile();
         }
     } catch (e) {
-        console.error("Erro ao carregar sessão:", e);
+        console.error("Erro de sessão:", e);
     }
     updateAuthUI();
 });
 
 function updateAuthUI() {
-    const loggedSec = document.getElementById('user-logged-section');
-    const guestSec = document.getElementById('user-guest-section');
-    const balEl = document.getElementById('user-balance');
+    const loggedIn = document.getElementById('user-logged-section');
+    const guest = document.getElementById('user-guest-section');
+    const balanceText = document.getElementById('user-balance');
 
     if (currentUser) {
-        if(loggedSec) loggedSec.classList.remove('hidden');
-        if(guestSec) guestSec.classList.add('hidden');
-        if(balEl) balEl.innerText = `R$ ${userBalance.toFixed(2)}`;
+        if(loggedIn) loggedIn.classList.remove('hidden');
+        if(guest) guest.classList.add('hidden');
+        if(balanceText) balanceText.innerText = `R$ ${userBalance.toFixed(2)}`;
     } else {
-        if(loggedSec) loggedSec.classList.add('hidden');
-        if(guestSec) guestSec.classList.remove('hidden');
+        if(loggedIn) loggedIn.classList.add('hidden');
+        if(guest) guest.classList.remove('hidden');
     }
 }
 
@@ -40,59 +40,39 @@ async function loadUserProfile() {
     }
 }
 
+async function updateBalanceInDb(newBalance) {
+    userBalance = newBalance;
+    updateAuthUI();
+    if (currentUser) {
+        await _supabase.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
+    }
+}
+
 function openAuthModal(mode) {
     authMode = mode;
-    const modal = document.getElementById('auth-modal');
-    const title = document.getElementById('auth-title');
-    const nameCont = document.getElementById('auth-name-container');
-    const btn = document.getElementById('auth-submit-btn');
-
-    if(modal) modal.classList.remove('hidden');
-    if(title) title.innerText = mode === 'signup' ? 'Criar Conta' : 'Entrar no Real Sports';
-    if(nameCont) nameCont.classList.toggle('hidden', mode !== 'signup');
-    if(btn) btn.innerText = mode === 'signup' ? 'Cadastrar' : 'Entrar';
+    document.getElementById('auth-modal').classList.remove('hidden');
+    document.getElementById('auth-title').innerText = mode === 'signup' ? 'Criar Conta' : 'Entrar';
+    document.getElementById('auth-name-container').classList.toggle('hidden', mode !== 'signup');
+    document.getElementById('auth-submit-btn').innerText = mode === 'signup' ? 'Cadastrar' : 'Entrar';
 }
 
-function closeAuthModal() {
-    const modal = document.getElementById('auth-modal');
-    if(modal) modal.classList.add('hidden');
-}
+function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); }
 
 async function submitAuth() {
     const email = document.getElementById('auth-email').value;
     const password = document.getElementById('auth-password').value;
     const fullName = document.getElementById('auth-name')?.value || '';
 
-    if (!email || !password) return alert('Preencha e-mail e senha.');
+    if (!email || !password) return alert('Preencha os dados corretamente.');
 
     if (authMode === 'signup') {
-        // Cadastro corrigido (signUp)
-        const { data, error } = await _supabase.auth.signUp({
-            email: email,
-            password: password,
-            options: { data: { full_name: fullName } }
-        });
-
-        if (error) {
-            alert('Erro no cadastro: ' + error.message);
-        } else {
-            alert('Conta criada com sucesso! Faça login para entrar.');
-            openAuthModal('login');
-        }
+        const { error } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: fullName } } });
+        if (error) alert('Erro: ' + error.message);
+        else { alert('Conta criada! Faça login.'); openAuthModal('login'); }
     } else {
-        // Login corrigido (signInWithPassword)
-        const { data, error } = await _supabase.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            alert('Erro no login: ' + error.message);
-        } else {
-            currentUser = data.user;
-            await loadUserProfile();
-            closeAuthModal();
-        }
+        const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+        if (error) alert('Erro: ' + error.message);
+        else { currentUser = data.user; await loadUserProfile(); closeAuthModal(); }
     }
 }
 
@@ -101,4 +81,18 @@ async function logout() {
     currentUser = null;
     userBalance = 0;
     updateAuthUI();
+}
+
+function openDepositModal() {
+    if (!currentUser) return openAuthModal('login');
+    document.getElementById('deposit-modal').classList.remove('hidden');
+}
+function closeDepositModal() { document.getElementById('deposit-modal').classList.add('hidden'); }
+
+async function simulateDeposit() {
+    const val = parseFloat(document.getElementById('deposit-amount').value) || 0;
+    if (val <= 0) return;
+    await updateBalanceInDb(userBalance + val);
+    alert(`Depósito de R$ ${val.toFixed(2)} processado!`);
+    closeDepositModal();
 }
