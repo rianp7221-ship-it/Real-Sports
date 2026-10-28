@@ -3,21 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Real Sports - Apostas Esportivas & Cassino</title>
+    <title>Real Sports - Plataforma de Apostas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Supabase SDK Bundle -->
     <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { green: '#00E676', dark: '#0B0E14', card: '#151921', border: '#2A2E39' }
-                    }
-                }
-            }
+            theme: { extend: { colors: { brand: { green: '#00E676', dark: '#0B0E14', card: '#151921', border: '#2A2E39' } } } }
         }
     </script>
 </head>
@@ -27,187 +20,85 @@
     <header class="bg-brand-card border-b border-brand-border sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <span class="text-2xl font-black text-brand-green tracking-wider uppercase">REAL<span class="text-white">SPORTS</span></span>
-
             <div class="flex items-center space-x-3">
-                <!-- Seção Usuário Logado -->
                 <div id="user-logged-section" class="flex items-center space-x-3 hidden">
                     <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
                         <span class="text-xs text-gray-400">Saldo:</span>
                         <span id="user-balance" class="font-bold text-brand-green">R$ 0,00</span>
                     </div>
-                    <button onclick="openDepositModal()" class="bg-brand-green hover:bg-emerald-400 text-black font-bold px-3 py-1.5 rounded-lg text-sm transition-all flex items-center space-x-1">
-                        <i class="fa-solid fa-wallet"></i> <span>Depositar</span>
-                    </button>
-                    <button onclick="logout()" class="text-gray-400 hover:text-white p-2 text-sm" title="Sair">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                    </button>
+                    <button onclick="openDepositModal()" class="bg-brand-green text-black font-bold px-3 py-1.5 rounded-lg text-sm"><i class="fa-solid fa-wallet"></i> Depositar</button>
+                    <button onclick="logout()" class="text-gray-400 hover:text-white p-2 text-sm"><i class="fa-solid fa-right-from-bracket"></i></button>
                 </div>
-
-                <!-- Seção Visitante -->
                 <div id="user-guest-section" class="flex items-center space-x-2">
-                    <button onclick="openAuthModal('login')" class="bg-brand-dark hover:border-brand-green border border-brand-border text-white font-bold px-4 py-2 rounded-lg text-sm">Entrar</button>
-                    <button onclick="openAuthModal('signup')" class="bg-brand-green hover:bg-emerald-400 text-black font-bold px-4 py-2 rounded-lg text-sm">Cadastrar</button>
+                    <button onclick="openAuthModal('login')" class="border border-brand-border text-white font-bold px-4 py-2 rounded-lg text-sm">Entrar</button>
+                    <button onclick="openAuthModal('signup')" class="bg-brand-green text-black font-bold px-4 py-2 rounded-lg text-sm">Cadastrar</button>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Sub-Navbar de Navegação entre Jogos -->
+    <!-- Navegação -->
     <nav class="bg-brand-card/50 border-b border-brand-border">
-        <div class="max-w-7xl mx-auto px-4 flex space-x-6 overflow-x-auto text-sm font-semibold">
-            <button onclick="switchTab('sports')" class="py-3 text-brand-green border-b-2 border-brand-green flex items-center space-x-2 whitespace-nowrap">
-                <i class="fa-solid fa-football"></i> <span>Apostas Esportivas</span>
-            </button>
-            <button onclick="switchTab('mines')" class="py-3 text-gray-400 hover:text-white flex items-center space-x-2 whitespace-nowrap">
-                <i class="fa-solid fa-bomb"></i> <span>Mines</span>
-            </button>
+        <div class="max-w-7xl mx-auto px-4 flex space-x-6 text-sm font-semibold">
+            <button onclick="switchTab('sports')" class="py-3 text-brand-green border-b-2 border-brand-green flex items-center space-x-2"><i class="fa-solid fa-football"></i> Esportes</button>
+            <button onclick="switchTab('mines')" class="py-3 text-gray-400 hover:text-white flex items-center space-x-2"><i class="fa-solid fa-bomb"></i> Mines</button>
         </div>
     </nav>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteúdo Principal Dinâmico -->
     <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
-        <!-- Aba: Apostas Esportivas -->
+        <!-- Secção Esportes -->
         <section id="tab-sports" class="space-y-6">
             <div class="bg-gradient-to-r from-emerald-900/40 to-brand-card p-6 rounded-2xl border border-brand-border">
-                <span class="bg-brand-green text-black font-black text-xs px-2 py-1 rounded uppercase">Destaque do Dia</span>
-                <h2 class="text-2xl font-bold mt-2">Brasileirão & Liga dos Campeões</h2>
-                <p class="text-gray-400 text-sm">Aposte ao vivo com as melhores odds no Real Sports!</p>
+                <span class="bg-brand-green text-black font-black text-xs px-2 py-1 rounded uppercase">Destaques</span>
+                <h2 class="text-2xl font-bold mt-2">Principais Partidas</h2>
             </div>
-
-            <!-- Lista de Jogos Dinâmicos -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Card Jogo 1 -->
-                <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4">
-                    <div class="flex justify-between items-center text-xs text-gray-400">
-                        <span><i class="fa-solid fa-circle text-red-500 animate-pulse mr-1"></i> Ao Vivo - 72'</span>
-                        <span class="text-brand-green font-semibold">Brasileirão - Série A</span>
-                    </div>
-                    <div class="flex justify-between items-center font-bold text-lg">
-                        <span>Flamengo</span>
-                        <span class="text-brand-green">2 - 1</span>
-                        <span>Palmeiras</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="addBet('Flamengo x Palmeiras', 'Flamengo', 1.85)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">1</div>
-                            <div class="font-bold text-brand-green">1.85</div>
-                        </button>
-                        <button onclick="addBet('Flamengo x Palmeiras', 'Empate', 3.20)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">X</div>
-                            <div class="font-bold text-brand-green">3.20</div>
-                        </button>
-                        <button onclick="addBet('Flamengo x Palmeiras', 'Palmeiras', 4.10)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">2</div>
-                            <div class="font-bold text-brand-green">4.10</div>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Card Jogo 2 -->
-                <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4">
-                    <div class="flex justify-between items-center text-xs text-gray-400">
-                        <span>Hoje às 21:30</span>
-                        <span class="text-brand-green font-semibold">Brasileirão - Série A</span>
-                    </div>
-                    <div class="flex justify-between items-center font-bold text-lg">
-                        <span>Corinthians</span>
-                        <span class="text-gray-500">vs</span>
-                        <span>São Paulo</span>
-                    </div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button onclick="addBet('Corinthians x São Paulo', 'Corinthians', 2.30)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">1</div>
-                            <div class="font-bold text-brand-green">2.30</div>
-                        </button>
-                        <button onclick="addBet('Corinthians x São Paulo', 'Empate', 2.90)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">X</div>
-                            <div class="font-bold text-brand-green">2.90</div>
-                        </button>
-                        <button onclick="addBet('Corinthians x São Paulo', 'São Paulo', 3.10)" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
-                            <div class="text-xs text-gray-400">2</div>
-                            <div class="font-bold text-brand-green">3.10</div>
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <!-- A lista de jogos será injetada aqui pelo sports.js -->
+            <div id="sports-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
-        <!-- Aba: Mines -->
+        <!-- Secção Mines -->
         <section id="tab-mines" class="hidden max-w-md mx-auto space-y-6">
             <div class="bg-brand-card p-6 rounded-2xl border border-brand-border text-center space-y-4">
-                <h2 class="text-xl font-bold flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-bomb text-brand-green"></i> <span>Real Mines</span>
-                </h2>
-                <div id="mines-grid" class="grid grid-cols-5 gap-2 my-4"></div>
-                <div class="flex space-x-2">
-                    <input type="number" id="mines-amount" value="10" min="1" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white font-bold text-center">
-                    <button class="bg-brand-green text-black font-bold px-6 py-2 rounded-lg w-full">Apostar</button>
-                </div>
+                <h2 class="text-xl font-bold flex items-center justify-center space-x-2"><i class="fa-solid fa-bomb text-brand-green"></i> <span>Real Mines</span></h2>
+                <!-- O tabuleiro será injetado aqui pelo mines.js -->
+                <div id="mines-grid" class="w-full"></div> 
             </div>
         </section>
     </main>
 
-    <!-- Boletim de Apostas Flutuante -->
+    <!-- UI Modais -->
     <div id="betslip" class="fixed bottom-4 right-4 bg-brand-card border border-brand-border rounded-xl p-4 w-80 shadow-2xl hidden z-40">
-        <div class="flex justify-between items-center border-b border-brand-border pb-2 mb-3">
-            <span class="font-bold text-sm">Boletim de Aposta</span>
-            <button onclick="closeBetSlip()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div id="betslip-content" class="space-y-2 text-sm mb-3"></div>
+        <div class="flex justify-between items-center border-b border-brand-border pb-2 mb-3"><span class="font-bold text-sm">Boletim</span><button onclick="closeBetSlip()"><i class="fa-solid fa-xmark"></i></button></div>
+        <div id="betslip-content" class="mb-3 text-sm"></div>
         <div class="space-y-2 border-t border-brand-border pt-2">
-            <div class="flex justify-between text-xs text-gray-400 items-center">
-                <span>Valor (R$):</span>
-                <input type="number" id="bet-amount" value="10" min="1" oninput="updateBetReturn()" class="w-24 bg-brand-dark border border-brand-border rounded px-2 py-1 text-right text-white font-bold">
-            </div>
-            <div class="flex justify-between text-sm font-bold">
-                <span>Retorno Possível:</span>
-                <span id="bet-return" class="text-brand-green">R$ 0,00</span>
-            </div>
-            <button onclick="placeBet()" class="w-full bg-brand-green hover:bg-emerald-400 text-black font-bold py-2 rounded-lg transition-all text-sm">Confirmar Aposta</button>
+            <div class="flex justify-between items-center text-xs text-gray-400"><span>Valor:</span><input type="number" id="bet-amount" value="10" oninput="updateBetReturn()" class="w-24 bg-brand-dark border border-brand-border rounded px-2 py-1 text-right text-white"></div>
+            <div class="flex justify-between text-sm font-bold"><span>Retorno:</span><span id="bet-return" class="text-brand-green">R$ 0,00</span></div>
+            <button onclick="placeBet()" class="w-full bg-brand-green text-black font-bold py-2 rounded-lg">Confirmar</button>
         </div>
     </div>
 
-    <!-- Modal de Depósito -->
     <div id="deposit-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm space-y-4">
-            <div class="flex justify-between items-center">
-                <h3 class="font-bold text-lg">Depositar Saldo</h3>
-                <button onclick="closeDepositModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-2">
-                <label class="text-xs text-gray-400">Valor do Depósito (R$):</label>
-                <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white font-bold">
-            </div>
+            <div class="flex justify-between items-center"><h3 class="font-bold">Depósito</h3><button onclick="closeDepositModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white font-bold">
             <button onclick="simulateDeposit()" class="w-full bg-brand-green text-black font-bold py-2.5 rounded-lg">Confirmar Depósito</button>
         </div>
     </div>
 
-    <!-- Modal Autenticação -->
     <div id="auth-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm space-y-4">
-            <div class="flex justify-between items-center">
-                <h3 id="auth-title" class="font-bold text-lg">Entrar</h3>
-                <button onclick="closeAuthModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            </div>
+            <div class="flex justify-between items-center"><h3 id="auth-title" class="font-bold text-lg">Entrar</h3><button onclick="closeAuthModal()"><i class="fa-solid fa-xmark"></i></button></div>
             <div class="space-y-3">
-                <div id="auth-name-container" class="hidden space-y-1">
-                    <label class="text-xs text-gray-400">Nome Completo</label>
-                    <input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-xs text-gray-400">E-mail</label>
-                    <input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
-                </div>
-                <div class="space-y-1">
-                    <label class="text-xs text-gray-400">Senha</label>
-                    <input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white">
-                </div>
+                <div id="auth-name-container" class="hidden space-y-1"><label class="text-xs text-gray-400">Nome</label><input type="text" id="auth-name" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white"></div>
+                <div class="space-y-1"><label class="text-xs text-gray-400">E-mail</label><input type="email" id="auth-email" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white"></div>
+                <div class="space-y-1"><label class="text-xs text-gray-400">Senha</label><input type="password" id="auth-password" class="w-full bg-brand-dark border border-brand-border rounded-lg px-3 py-2 text-white"></div>
             </div>
             <button id="auth-submit-btn" onclick="submitAuth()" class="w-full bg-brand-green text-black font-bold py-2.5 rounded-lg">Entrar</button>
         </div>
     </div>
 
-    <!-- Chamada dos Arquivos JS Separados -->
+    <!-- Scripts da Arquitetura Modular -->
     <script src="js/supabase.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/sports.js"></script>
