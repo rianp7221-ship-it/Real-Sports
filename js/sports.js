@@ -1,80 +1,70 @@
-// Módulo de Apostas Desportivas
+// js/sports.js - Motor de Apostas Desportivas
+const matchesData = [
+    { id: 1, league: 'Série A', time: 'Ao Vivo', home: 'Flamengo', away: 'Palmeiras', score: '2-1', odds: { home: 1.85, draw: 3.20, away: 4.10 } },
+    { id: 2, league: 'Série A', time: '21:30', home: 'Corinthians', away: 'São Paulo', score: 'vs', odds: { home: 2.30, draw: 2.90, away: 3.10 } },
+    { id: 3, league: 'Champions', time: 'Amanhã', home: 'Real Madrid', away: 'Man City', score: 'vs', odds: { home: 2.45, draw: 3.40, away: 2.75 } }
+];
+
 let currentBet = null;
 
-const matchesData = [
-    { id: 1, league: 'Brasileirão - Série A', time: 'Ao Vivo - 72\'', home: 'Flamengo', away: 'Palmeiras', score: '2 - 1', odds: { home: 1.85, draw: 3.20, away: 4.10 } },
-    { id: 2, league: 'Brasileirão - Série A', time: 'Hoje às 21:30', home: 'Corinthians', away: 'São Paulo', score: 'vs', odds: { home: 2.30, draw: 2.90, away: 3.10 } },
-    { id: 3, league: 'Champions League', time: 'Amanhã às 16:00', home: 'Real Madrid', away: 'Manchester City', score: 'vs', odds: { home: 2.45, draw: 3.40, away: 2.75 } },
-    { id: 4, league: 'Brasileirão - Série B', time: 'Hoje às 19:00', home: 'Santos', away: 'Goiás', score: 'vs', odds: { home: 1.75, draw: 3.10, away: 4.80 } }
-];
+// Renderiza a lista de jogos automaticamente ao carregar
+window.addEventListener('DOMContentLoaded', renderMatches);
+
+function renderMatches() {
+    const list = document.getElementById('sports-list');
+    if (!list) return;
+    
+    list.innerHTML = matchesData.map(m => `
+        <div class="bg-brand-card p-4 rounded-xl border border-brand-border space-y-4 shadow-sm hover:border-brand-green transition-colors">
+            <div class="flex justify-between items-center text-xs text-gray-400">
+                <span>${m.time === 'Ao Vivo' ? '<i class="fa-solid fa-circle text-red-500 animate-pulse mr-1"></i> Ao Vivo' : m.time}</span>
+                <span class="text-brand-green font-semibold">${m.league}</span>
+            </div>
+            <div class="flex justify-between items-center font-bold text-lg">
+                <span>${m.home}</span>
+                <span class="${m.score !== 'vs' ? 'text-brand-green' : 'text-gray-500'}">${m.score}</span>
+                <span>${m.away}</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+                <button onclick="addBet('${m.home} x ${m.away}', '${m.home}', ${m.odds.home})" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
+                    <div class="text-xs text-gray-400">1</div><div class="font-bold text-brand-green">${m.odds.home.toFixed(2)}</div>
+                </button>
+                <button onclick="addBet('${m.home} x ${m.away}', 'Empate', ${m.odds.draw})" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
+                    <div class="text-xs text-gray-400">X</div><div class="font-bold text-brand-green">${m.odds.draw.toFixed(2)}</div>
+                </button>
+                <button onclick="addBet('${m.home} x ${m.away}', '${m.away}', ${m.odds.away})" class="bg-brand-dark hover:border-brand-green border border-brand-border p-2 rounded text-center transition-all">
+                    <div class="text-xs text-gray-400">2</div><div class="font-bold text-brand-green">${m.odds.away.toFixed(2)}</div>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
 
 function addBet(match, selection, odds) {
     currentBet = { match, selection, odds };
-    const betContent = document.getElementById('betslip-content');
-    const betSlip = document.getElementById('betslip');
-
-    if (betContent) {
-        betContent.innerHTML = `
-            <div class="font-bold text-white">${match}</div>
-            <div class="text-xs text-brand-green">Escolha: <b>${selection}</b> @ ${odds.toFixed(2)}</div>
-        `;
-    }
-    if (betSlip) betSlip.classList.remove('hidden');
+    document.getElementById('betslip-content').innerHTML = `
+        <div class="font-bold text-white">${match}</div>
+        <div class="text-xs text-brand-green mt-1">Sua Seleção: <b>${selection}</b> @ ${odds.toFixed(2)}</div>
+    `;
+    document.getElementById('betslip').classList.remove('hidden');
     updateBetReturn();
 }
 
 function updateBetReturn() {
     if (!currentBet) return;
-    const amountInput = document.getElementById('bet-amount');
-    const returnEl = document.getElementById('bet-return');
-    const amount = parseFloat(amountInput?.value) || 0;
-
-    if (returnEl) returnEl.innerText = `R$ ${(amount * currentBet.odds).toFixed(2)}`;
+    const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+    document.getElementById('bet-return').innerText = `R$ ${(amount * currentBet.odds).toFixed(2)}`;
 }
 
-function closeBetSlip() {
-    const betSlip = document.getElementById('betslip');
-    if (betSlip) betSlip.classList.add('hidden');
-    currentBet = null;
-}
+function closeBetSlip() { document.getElementById('betslip').classList.add('hidden'); currentBet = null; }
 
 async function placeBet() {
     if (!currentUser) return openAuthModal('login');
-    const amountInput = document.getElementById('bet-amount');
-    const amount = parseFloat(amountInput?.value) || 0;
-
-    if (amount <= 0) return alert('Insira um valor válido para a aposta.');
-    if (amount > userBalance) return alert('Saldo insuficiente! Faça um depósito para continuar.');
+    const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
+    if (amount <= 0) return alert('Valor inválido.');
+    if (amount > userBalance) return alert('Saldo insuficiente!');
 
     await updateBalanceInDb(userBalance - amount);
-    alert(`Aposta confirmada com sucesso no valor de R$ ${amount.toFixed(2)}!`);
+    alert(`Aposta de R$ ${amount.toFixed(2)} registada com sucesso!`);
     closeBetSlip();
-}
-
-async function updateBalanceInDb(newBalance) {
-    userBalance = newBalance;
-    updateAuthUI();
-    if (currentUser) {
-        await _supabase.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
-    }
-}
-
-function openDepositModal() {
-    if (!currentUser) return openAuthModal('login');
-    const modal = document.getElementById('deposit-modal');
-    if (modal) modal.classList.remove('hidden');
-}
-
-function closeDepositModal() {
-    const modal = document.getElementById('deposit-modal');
-    if (modal) modal.classList.add('hidden');
-}
-
-async function simulateDeposit() {
-    const amountInput = document.getElementById('deposit-amount');
-    const val = parseFloat(amountInput?.value) || 0;
-    if (val <= 0) return alert('Insira um valor válido para o depósito.');
-    await updateBalanceInDb(userBalance + val);
-    alert(`Depósito de R$ ${val.toFixed(2)} realizado com sucesso!`);
-    closeDepositModal();
 }
