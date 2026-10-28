@@ -1,136 +1,205 @@
-// js/sports.js - Motor de Apostas Múltiplas e Visual Detalhado Betano
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Sports - Apostas Esportivas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { 
+                extend: { 
+                    colors: { 
+                        brand: { 
+                            primary: '#FF6B00', 
+                            primaryHover: '#FF8533', 
+                            dark: '#0A0A0A', 
+                            card: '#1A1A1A', 
+                            sidebar: '#121212', 
+                            border: '#2D2D2D' 
+                        } 
+                    } 
+                } 
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar-thumb { background: #2D2D2D; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #FF6B00; }
+    </style>
+</head>
+<body class="bg-brand-dark text-white h-screen font-sans flex flex-col overflow-hidden">
 
-let selectedBets = [];
+    <!-- Top Header -->
+    <header class="bg-brand-sidebar border-b border-brand-border h-16 flex items-center justify-between px-6 z-50 shrink-0">
+        <div class="flex items-center space-x-8">
+            <span class="text-2xl font-black text-white tracking-wider uppercase flex items-center">
+                <span class="bg-brand-primary text-white px-2.5 py-1 rounded-lg mr-2 italic font-black shadow-lg shadow-orange-600/30">REAL</span>SPORTS
+            </span>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-bold text-gray-300">
+                <a href="#" onclick="switchTab('sports')" class="text-brand-primary hover:text-white transition-colors">INÍCIO</a>
+                <a href="#" onclick="switchTab('sports')" class="hover:text-brand-primary transition-colors">AO VIVO</a>
+                <a href="#" onclick="switchTab('sports')" class="hover:text-brand-primary transition-colors">PRÓXIMOS JOGOS</a>
+                <a href="#" onclick="switchTab('mines')" class="hover:text-brand-primary transition-colors">CASSINO</a>
+            </nav>
+        </div>
 
-const detailedMatches = [
-    { id: 1, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Fluminense', away: 'Internacional', odds: { home: 1.85, draw: 3.50, away: 4.33 } },
-    { id: 2, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Santos', away: 'Palmeiras', odds: { home: 3.30, draw: 3.25, away: 2.20 } },
-    { id: 3, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'RB Bragantino', away: 'Chapecoense', odds: { home: 1.28, draw: 5.50, away: 10.00 } },
-    { id: 4, league: 'Brasil - Série A', time: '21:30', date: '28/10', home: 'Bahia', away: 'São Paulo', odds: { home: 2.05, draw: 3.50, away: 3.60 } },
-    { id: 5, league: 'Liga dos Campeões', time: '16:00', date: 'Hoje', home: 'Real Madrid', away: 'Manchester City', odds: { home: 2.30, draw: 3.40, away: 2.90 } },
-    { id: 6, league: 'Premier League', time: '17:00', date: 'Hoje', home: 'Arsenal', away: 'Liverpool', odds: { home: 2.10, draw: 3.30, away: 3.10 } },
-    { id: 7, league: 'La Liga', time: '18:00', date: 'Amanhã', home: 'Barcelona', away: 'Atlético de Madrid', odds: { home: 1.75, draw: 3.60, away: 4.50 } }
-];
+        <div class="hidden xl:flex items-center bg-brand-dark border border-brand-border rounded-full px-4 py-1.5 w-72">
+            <i class="fa-solid fa-magnifying-glass text-gray-500 text-sm mr-2"></i>
+            <input type="text" placeholder="Buscar times ou ligas..." class="bg-transparent text-xs text-white outline-none w-full placeholder-gray-500">
+        </div>
 
-window.addEventListener('DOMContentLoaded', () => {
-    renderMatches();
-});
-
-function renderMatches() {
-    const list = document.getElementById('sports-list');
-    if (!list) return;
-    
-    list.innerHTML = detailedMatches.map(m => `
-        <div class="bg-brand-card hover:bg-brand-card/80 border border-brand-border rounded-xl p-4 transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="flex items-start space-x-4">
-                <div class="text-center min-w-[55px] pt-1">
-                    <div class="text-xs font-bold text-white">${m.time}</div>
-                    <div class="text-[10px] text-gray-400">${m.date}</div>
+        <div class="flex items-center space-x-3">
+            <div id="user-logged-section" class="flex items-center space-x-3 hidden">
+                <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg">
+                    <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
+                </button>
+                <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
+                    <span id="user-balance" class="font-bold text-white text-sm">R$ 0,00</span>
                 </div>
-                <div class="space-y-1">
-                    <div class="flex items-center space-x-2 text-sm font-bold text-white"><i class="fa-solid fa-shield text-[10px] text-brand-primary"></i><span>${m.home}</span></div>
-                    <div class="flex items-center space-x-2 text-sm font-bold text-white"><i class="fa-solid fa-shield text-[10px] text-gray-500"></i><span>${m.away}</span></div>
-                    <div class="text-[10px] text-gray-400 pt-1"><i class="fa-solid fa-earth-americas text-[9px] mr-1"></i>${m.league}</div>
-                </div>
+                <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider">
+                    Depositar
+                </button>
+                <button onclick="logout()" class="text-gray-400 hover:text-white p-2 text-sm" title="Sair da Conta">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
             </div>
-            <div class="grid grid-cols-3 gap-2 w-full md:w-auto">
-                <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', '${m.home}', ${m.odds.home})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                    <span class="text-xs text-gray-400 group-hover:text-white">1</span>
-                    <span class="text-sm font-bold text-brand-primary">${m.odds.home.toFixed(2)}</span>
-                </button>
-                <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', 'Empate', ${m.odds.draw})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                    <span class="text-xs text-gray-400 group-hover:text-white">X</span>
-                    <span class="text-sm font-bold text-brand-primary">${m.odds.draw.toFixed(2)}</span>
-                </button>
-                <button onclick="toggleBet('${m.id}', '${m.home} x ${m.away}', '${m.away}', ${m.odds.away})" class="bg-brand-dark hover:border-brand-primary border border-brand-border px-3 py-2 rounded-lg flex items-center justify-between space-x-3 transition-all group min-w-[95px]">
-                    <span class="text-xs text-gray-400 group-hover:text-white">2</span>
-                    <span class="text-sm font-bold text-brand-primary">${m.odds.away.toFixed(2)}</span>
-                </button>
+
+            <div id="user-guest-section" class="flex items-center space-x-2">
+                <button onclick="openAuthModal('login')" class="text-white hover:text-brand-primary font-bold px-4 py-2 text-xs transition-colors uppercase">Entrar</button>
+                <button onclick="openAuthModal('signup')" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-5 py-2 rounded-lg text-xs transition-colors uppercase shadow-lg shadow-orange-600/20">Registar</button>
             </div>
         </div>
-    `).join('');
-}
+    </header>
 
-function toggleBet(matchId, matchName, selection, odds) {
-    selectedBets = selectedBets.filter(b => b.matchId !== matchId);
-    selectedBets.push({ matchId, match: matchName, selection, odds: parseFloat(odds) });
-    renderBetslip();
-}
-
-function removeBet(matchId) {
-    selectedBets = selectedBets.filter(b => b.matchId !== matchId);
-    renderBetslip();
-}
-
-function renderBetslip() {
-    const slipContainer = document.getElementById('betslip');
-    const emptySlip = document.getElementById('empty-betslip');
-    const content = document.getElementById('betslip-content');
-    const countBadge = document.getElementById('bet-count-badge');
-
-    if (countBadge) countBadge.innerText = selectedBets.length;
-
-    if (!slipContainer || !emptySlip) return;
-
-    if (selectedBets.length === 0) {
-        slipContainer.classList.add('hidden');
-        emptySlip.classList.remove('hidden');
-        return;
-    }
-
-    slipContainer.classList.remove('hidden');
-    emptySlip.classList.add('hidden');
-
-    content.innerHTML = selectedBets.map(b => `
-        <div class="bg-brand-dark p-3 rounded-xl border border-brand-border relative group">
-            <button onclick="removeBet('${b.matchId}')" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-xs"><i class="fa-solid fa-xmark"></i></button>
-            <div class="font-bold text-white text-xs pr-4">${b.match}</div>
-            <div class="text-xs text-brand-primary mt-1 flex justify-between">
-                <span>Seleção: <b>${b.selection}</b></span>
-                <span class="font-bold">@ ${b.odds.toFixed(2)}</span>
+    <!-- Estrutura de 3 Colunas -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Coluna Esquerda -->
+        <aside class="w-64 bg-brand-sidebar border-r border-brand-border hidden lg:flex flex-col overflow-y-auto">
+            <div class="p-4">
+                <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</h3>
+                <nav class="space-y-1">
+                    <button onclick="switchTab('sports')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium">
+                        <span class="flex items-center"><i class="fa-solid fa-futbol text-brand-primary w-6"></i> Futebol</span>
+                        <span class="text-xs bg-brand-dark px-2 py-0.5 rounded text-gray-500 border border-brand-border">4</span>
+                    </button>
+                    <button onclick="switchTab('mines')" class="w-full flex items-center justify-between px-3 py-2.5 text-sm text-gray-300 hover:bg-brand-card hover:text-white rounded-lg transition-colors font-medium">
+                        <span class="flex items-center"><i class="fa-solid fa-bomb text-brand-primary w-6"></i> Real Mines</span>
+                        <span class="text-xs bg-brand-primary/20 text-brand-primary px-2 py-0.5 rounded font-bold">HOT</span>
+                    </button>
+                </nav>
             </div>
+        </aside>
+
+        <!-- Coluna Central -->
+        <main class="flex-1 bg-brand-dark overflow-y-auto p-4 lg:p-6 space-y-6">
+            <section id="tab-sports" class="space-y-6 max-w-5xl mx-auto">
+                
+                <!-- Banners Promocionais -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-gradient-to-br from-neutral-900 to-zinc-900 border border-brand-border/80 rounded-2xl p-5 relative overflow-hidden shadow-xl">
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-brand-primary/20 text-brand-primary px-2.5 py-1 rounded-md">Indique e Ganhe</span>
+                        <h4 class="font-black text-base text-white mt-3 mb-1">CONVIDE AMIGOS</h4>
+                        <p class="text-xs text-gray-400 mb-2">Ganhe bónus exclusivos.</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-neutral-900 to-zinc-900 border border-brand-border/80 rounded-2xl p-5 relative overflow-hidden shadow-xl">
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-500 px-2.5 py-1 rounded-md">Super Odds</span>
+                        <h4 class="font-black text-base text-white mt-3 mb-1">MELHORES ODDs</h4>
+                        <p class="text-xs text-gray-400 mb-2">Multiplicadores aumentados.</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-neutral-900 to-zinc-900 border border-brand-border/80 rounded-2xl p-5 relative overflow-hidden shadow-xl">
+                        <span class="text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 px-2.5 py-1 rounded-md">Criar Aposta</span>
+                        <h4 class="font-black text-base text-white mt-3 mb-1">MÚLTIPLAS</h4>
+                        <p class="text-xs text-gray-400 mb-2">Combine mercados num só jogo.</p>
+                    </div>
+                </div>
+
+                <!-- Lista de Jogos Detalhada (Estilo Betano) -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-center justify-between border-b border-brand-border pb-3">
+                        <h3 class="text-base font-black uppercase italic tracking-wider flex items-center">
+                            <i class="fa-solid fa-fire text-brand-primary mr-2"></i> Jogos em Destaque
+                        </h3>
+                    </div>
+                    <div id="sports-list" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <!-- Seção Cassino (Mines) -->
+            <section id="tab-mines" class="hidden max-w-2xl mx-auto space-y-6">
+                <div class="bg-brand-card p-6 md:p-8 rounded-2xl border border-brand-border shadow-2xl">
+                    <div class="flex justify-between items-center mb-6 border-b border-brand-border pb-4">
+                        <h2 class="text-2xl font-black flex items-center uppercase italic text-white"><i class="fa-solid fa-bomb text-brand-primary mr-3 text-3xl"></i> Real Mines</h2>
+                    </div>
+                    <div id="mines-grid" class="w-full"></div> 
+                </div>
+            </section>
+        </main>
+
+        <!-- Coluna Direita: Boletim -->
+        <aside class="w-80 bg-brand-sidebar border-l border-brand-border hidden xl:flex flex-col shrink-0">
+            <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
+                <h3 class="font-bold uppercase tracking-wider text-xs flex items-center text-white"><i class="fa-solid fa-receipt text-brand-primary mr-2 text-sm"></i> Boletim de Apostas</h3>
+                <span id="bet-count-badge" class="text-[10px] bg-brand-primary text-white font-bold px-2 py-0.5 rounded-full">0</span>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
+                <div>
+                    <div id="betslip" class="hidden space-y-4">
+                        <div id="betslip-content" class="space-y-2 max-h-60 overflow-y-auto pr-1"></div>
+                        <div class="space-y-3 bg-brand-card p-4 rounded-xl border border-brand-border">
+                            <div class="flex justify-between items-center text-xs text-gray-400">
+                                <span>Valor (R$):</span>
+                                <input type="number" id="bet-amount" value="10" min="1" oninput="updateBetReturn()" class="w-24 bg-brand-dark border border-brand-border rounded-lg px-2.5 py-1.5 text-right text-white font-bold outline-none focus:border-brand-primary">
+                            </div>
+                            <div class="flex justify-between text-xs text-gray-400">
+                                <span>Odd Total:</span>
+                                <span id="total-odds" class="text-white font-bold">1.00</span>
+                            </div>
+                            <div class="flex justify-between text-sm font-bold border-t border-brand-border pt-3">
+                                <span>Retorno:</span>
+                                <span id="bet-return" class="text-brand-primary text-base">R$ 0,00</span>
+                            </div>
+                            <button onclick="placeBet()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl transition-colors mt-2 text-xs uppercase tracking-wider shadow-lg">Fazer Aposta Múltipla</button>
+                        </div>
+                    </div>
+
+                    <div id="empty-betslip" class="space-y-4">
+                        <div class="flex flex-col items-center justify-center text-gray-500 text-center py-12 px-4 bg-brand-card/50 rounded-xl border border-brand-border/50">
+                            <i class="fa-solid fa-ticket text-4xl mb-3 opacity-30 text-brand-primary"></i>
+                            <p class="text-xs text-gray-400">O seu boletim está vazio. Clique nas cotações para apostar.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modais -->
+    <div id="history-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
+                <h3 class="font-black text-lg uppercase italic text-white flex items-center"><i class="fa-solid fa-clock-rotate-left text-brand-primary mr-2.5"></i> Histórico de Apostas</h3>
+                <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="history-list"></div>
         </div>
-    `).join('');
+    </div>
 
-    updateBetReturn();
-}
+    <div id="deposit-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-base">Depositar Saldo</h3><button onclick="closeDepositModal()"><i class="fa-solid fa-xmark"></i></button></div>
+            <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary mb-4 text-center">
+            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-black py-3 rounded-xl uppercase text-xs">Gerar Pagamento</button>
+        </div>
+    </div>
 
-function updateBetReturn() {
-    if (selectedBets.length === 0) return;
-    let totalOdds = selectedBets.reduce((acc, b) => acc * b.odds, 1);
-    const totalOddsEl = document.getElementById('total-odds');
-    if (totalOddsEl) totalOddsEl.innerText = totalOdds.toFixed(2);
-
-    const amountInput = document.getElementById('bet-amount');
-    const amount = amountInput ? parseFloat(amountInput.value) || 0 : 0;
-    
-    const betReturnEl = document.getElementById('bet-return');
-    if (betReturnEl) betReturnEl.innerText = `R$ ${(amount * totalOdds).toFixed(2)}`;
-}
-
-async function placeBet() {
-    if (typeof currentUser !== 'undefined' && !currentUser) return openAuthModal('login');
-    if (selectedBets.length === 0) return alert('Selecione pelo menos um jogo.');
-
-    const amountInput = document.getElementById('bet-amount');
-    const amount = amountInput ? parseFloat(amountInput.value) || 0 : 0;
-    if (amount <= 0) return alert('Insira um valor válido.');
-    
-    if (typeof userBalance !== 'undefined' && amount > userBalance) return alert('Saldo insuficiente!');
-
-    let totalOdds = selectedBets.reduce((acc, b) => acc * b.odds, 1);
-    let totalReturn = amount * totalOdds;
-
-    if (typeof updateBalanceInDb === 'function') {
-        await updateBalanceInDb(userBalance - amount);
-    }
-    
-    let gameDescription = selectedBets.map(b => `${b.match} (${b.selection})`).join(' + ');
-    if (typeof registerBet === 'function') {
-        registerBet(`Múltipla (${selectedBets.length} jogos)`, gameDescription, amount, totalReturn, 'Pendente');
-    }
-
-    alert(`Aposta Múltipla de R$ ${amount.toFixed(2)} registada com sucesso!`);
-    selectedBets = [];
-    renderBetslip();
-}
+    <div id="auth-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-8 w-full max-w-md shadow-2xl relative">
+            <div class="flex justify-between items-center mb-6"><h3 id="auth-title" class="font-black text-2xl uppercase italic text-white">Iniciar Sessão</h3><button onclick="closeAuthModal()" class="text-gray-500 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button></div>
