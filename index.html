@@ -50,10 +50,8 @@
             </nav>
         </div>
 
-        <!-- Cabeçalho Dinâmico de Autenticação -->
         <div class="flex items-center space-x-3">
             <div id="user-auth-section" class="flex items-center space-x-3">
-                <!-- Por predefinição (visitante), mostra o botão de Entrar -->
                 <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none cursor-pointer">
                     Entrar
                 </a>
@@ -63,7 +61,6 @@
 
     <!-- Estrutura Principal -->
     <div class="flex flex-1 overflow-hidden">
-        <!-- Sidebar Esquerda -->
         <aside class="w-64 bg-brand-sidebar border-r border-brand-border hidden lg:flex flex-col overflow-y-auto">
             <div class="p-4">
                 <h3 class="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-3">Menu Principal</h3>
@@ -80,7 +77,6 @@
             </div>
         </aside>
 
-        <!-- Conteúdo Central -->
         <main class="flex-1 bg-brand-dark overflow-y-auto p-4 lg:p-6 space-y-6">
             <section id="tab-sports" class="space-y-6 max-w-5xl mx-auto">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -118,7 +114,6 @@
             </section>
         </main>
 
-        <!-- Sidebar Direita (Boletim de Apostas) -->
         <aside class="w-80 bg-brand-sidebar border-l border-brand-border hidden xl:flex flex-col shrink-0">
             <div class="p-4 border-b border-brand-border bg-brand-card flex justify-between items-center">
                 <h3 class="font-bold uppercase tracking-wider text-xs flex items-center text-white"><i class="fa-solid fa-receipt text-brand-primary mr-2"></i> Boletim de Apostas</h3>
@@ -180,7 +175,7 @@
         </div>
     </div>
 
-    <!-- Script Completo do Supabase e Gestão da Plataforma -->
+    <!-- Script de Gestão e Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
@@ -200,25 +195,32 @@
             renderMatches();
             updateBalanceDisplay();
 
-            // Escutador de alterações de autenticação
-            supabase.auth.onAuthStateChange(async (event, session) => {
-                atualizarCabecalhoDinamico(session);
-            });
-
-            // Verificação inicial da sessão ativa
+            // Verificar sessão imediatamente ao carregar
             const { data: { session } } = await supabase.auth.getSession();
-            atualizarCabecalhoDinamico(session);
+            processarSessao(session);
+
+            // Ouvir mudanças de autenticação
+            supabase.auth.onAuthStateChange((event, session) => {
+                processarSessao(session);
+            });
         });
 
-        async function atualizarCabecalhoDinamico(session) {
+        async function processarSessao(session) {
             const authSection = document.getElementById('user-auth-section');
             const adminLink = document.getElementById('admin-link');
             if (!authSection) return;
 
             if (session) {
-                // Se estiver logado, verifica se é admin e injeta o painel de utilizador logado
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-                if (profile && profile.role === 'admin' && adminLink) {
+                // Utilizador Logado
+                let isAdmin = false;
+                try {
+                    const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+                    if (profile && profile.role === 'admin') isAdmin = true;
+                } catch (e) {
+                    console.log("Perfil não encontrado ainda.");
+                }
+
+                if (isAdmin && adminLink) {
                     adminLink.classList.remove('hidden');
                 }
 
@@ -240,12 +242,15 @@
                     </button>
                 `;
 
-                document.getElementById('btn-logout').addEventListener('click', async () => {
-                    await supabase.auth.signOut();
-                    window.location.href = 'index.html';
-                });
+                const btnLogout = document.getElementById('btn-logout');
+                if (btnLogout) {
+                    btnLogout.addEventListener('click', async () => {
+                        await supabase.auth.signOut();
+                        window.location.reload();
+                    });
+                }
             } else {
-                // Se for visitante, garante que o botão "Entrar" está lá visível
+                // Visitante
                 if (adminLink) adminLink.classList.add('hidden');
                 authSection.innerHTML = `
                     <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none cursor-pointer">
