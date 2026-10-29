@@ -47,6 +47,8 @@
                 <a href="#" onclick="switchTab('sports')" class="hover:text-brand-primary transition-colors">AO VIVO</a>
                 <a href="#" onclick="switchTab('sports')" class="hover:text-brand-primary transition-colors">PRÓXIMOS JOGOS</a>
                 <a href="#" onclick="switchTab('mines')" class="hover:text-brand-primary transition-colors">CASSINO</a>
+                <!-- Link direto para o painel de admin caso seja admin -->
+                <a href="admin.html" id="admin-link" class="hidden text-amber-500 hover:text-amber-400 transition-colors"><i class="fa-solid fa-shield-halved mr-1"></i> PAINEL ADMIN</a>
             </nav>
         </div>
 
@@ -69,10 +71,9 @@
                 <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
                     Depositar
                 </button>
-                <div class="auth-container" style="display: flex; gap: 6px; margin-left: auto; align-items: center;">
-                    <div id="auth-header-container">
-                        <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
-                    </div>
+                <!-- Botão dinâmico de Entrar ou Sair -->
+                <div id="auth-header-container" style="display: flex; gap: 6px; align-items: center;">
+                    <button onclick="openAuthModal()" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">Entrar</button>
                 </div>
             </div>
         </div>
@@ -185,8 +186,91 @@
         </aside>
     </div>
 
-    <!-- Modais do Sistema -->
+    <!-- MODAL DE AUTENTICAÇÃO (LOGIN / CADASTRO DIRETO NO INDEX) -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm shadow-2xl relative">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-lg"></i></button>
+            
+            <div class="text-center mb-6">
+                <h3 id="auth-modal-title" class="text-xl font-black uppercase italic text-white">Entrar na Real Sports</h3>
+                <p id="auth-modal-subtitle" class="text-xs text-gray-400 mt-1">Insira os seus dados para aceder à conta</p>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">E-mail</label>
+                    <input type="email" id="auth-email" placeholder="seu@email.com" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-brand-primary">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 mb-1">Palavra-passe</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2.5 text-white text-sm outline-none focus:border-brand-primary">
+                </div>
+
+                <button id="auth-submit-btn" onclick="handleAuthSubmit()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl uppercase text-xs tracking-wider transition-colors cursor-pointer mt-2">
+                    Entrar
+                </button>
+
+                <div class="text-center pt-2">
+                    <button onclick="toggleAuthMode()" id="auth-toggle-btn" class="text-xs text-gray-400 hover:text-brand-primary transition-colors cursor-pointer">
+                        Não tem conta? <b>Cadastre-se aqui</b>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Outros Modais do Sistema -->
     <div id="history-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
         <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-3xl shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
-                <h3 class="font-black text-lg uppercase italic text-white flex items-center"><i class="fa-solid fa-
+                <h3 class="font-black text-lg uppercase italic text-white flex items-center"><i class="fa-solid fa-clock-rotate-left text-brand-primary mr-2.5"></i> Histórico de Apostas</h3>
+                <button onclick="closeHistoryModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3 text-sm text-gray-400 text-center py-12">Nenhuma atividade recente registada no histórico.</div>
+        </div>
+    </div>
+
+    <div id="deposit-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-base">Depositar Saldo</h3><button onclick="closeDepositModal()" class="cursor-pointer"><i class="fa-solid fa-xmark"></i></button></div>
+            <input type="number" id="deposit-amount" value="50" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-white font-bold text-lg outline-none focus:border-brand-primary mb-4 text-center">
+            <button onclick="simulateDeposit()" class="w-full bg-brand-primary text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Gerar Pagamento PIX</button>
+        </div>
+    </div>
+
+    <div id="my-tickets-modal" class="fixed inset-0 bg-black/90 flex items-center justify-center p-4 hidden z-50 backdrop-blur-sm">
+        <div class="bg-brand-card border border-brand-border rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-brand-border flex justify-between items-center bg-brand-sidebar rounded-t-2xl">
+                <h3 class="font-black text-lg uppercase italic text-white flex items-center">
+                    <i class="fa-solid fa-ticket text-brand-primary mr-2.5"></i> Meus Bilhetes Registados
+                </h3>
+                <button onclick="closeMyTicketsModal()" class="text-gray-500 hover:text-white text-xl cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="p-5 overflow-y-auto flex-1 bg-brand-dark space-y-3" id="my-tickets-modal-list"></div>
+        </div>
+    </div>
+
+    <!-- Script Completo com Supabase CDN e Lógica de Auth no Modal -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://eylkglkngskbbutuxuaj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGtnbGtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTU3ODQsImV4cCI6MjA4Nzc3MTc4NH0.hX0U06Yg3q9oR7S4U-E3a5B8Z7x0y1W9V2t4u6i8o0p';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let selectedBets = [];
+        let userBalance = 150.00;
+        let isRegisterMode = false;
+
+        const detailedMatches = [
+            { id: 1, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Fluminense', away: 'Internacional', odds: { home: 1.85, draw: 3.50, away: 4.33 } },
+            { id: 2, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'Santos', away: 'Palmeiras', odds: { home: 3.30, draw: 3.25, away: 2.20 } },
+            { id: 3, league: 'Brasil - Série A', time: '19:30', date: '28/10', home: 'RB Bragantino', away: 'Chapecoense', odds: { home: 1.28, draw: 5.50, away: 10.00 } },
+            { id: 4, league: 'Brasil - Série A', time: '21:30', date: '28/10', home: 'Bahia', away: 'São Paulo', odds: { home: 2.05, draw: 3.50, away: 3.60 } },
+            { id: 5, league: 'Liga dos Campeões', time: '16:00', date: 'Hoje', home: 'Real Madrid', away: 'Manchester City', odds: { home: 2.30, draw: 3.40, away: 2.90 } },
+            { id: 6, league: 'Premier League', time: '17:00', date: 'Hoje', home: 'Arsenal', away: 'Liverpool', odds: { home: 2.10, draw: 3.30, away: 3.10 } },
+            { id: 7, league: 'La Liga', time: '18:00', date: 'Amanhã', home: 'Barcelona', away: 'Atlético de Madrid', odds: { home: 1.75, draw: 3.60, away: 4.50 } }
+        ];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            renderMatches();
+            updateBalance
