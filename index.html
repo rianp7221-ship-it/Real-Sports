@@ -51,8 +51,9 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <!-- CABEÇALHO COM BOTÃO ENTRAR JÁ FIXO NO HTML PARA NUNCA SUMIR -->
+            <!-- Este contentor adapta-se automaticamente ao estado da sessão -->
             <div id="user-auth-section" class="flex items-center space-x-3">
+                <!-- Por predefinição começa com o botão Entrar (para visitantes) -->
                 <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none cursor-pointer">
                     Entrar
                 </a>
@@ -176,7 +177,7 @@
         </div>
     </div>
 
-    <!-- Script de Gestão e Supabase com as Chaves Corretas -->
+    <!-- Script de Gestão e Supabase com as tuas Chaves -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
@@ -196,37 +197,49 @@
             renderMatches();
             updateBalanceDisplay();
 
+            // Verifica a sessão atual no Supabase de forma assíncrona
             const { data: { session } } = await supabase.auth.getSession();
             const authSection = document.getElementById('user-auth-section');
             const adminLink = document.getElementById('admin-link');
 
-            if (authSection && session) {
-                // SÓ MUDA SE ESTIVER LOGADO
-                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-                if (profile && profile.role === 'admin' && adminLink) adminLink.classList.remove('hidden');
+            if (authSection) {
+                if (session) {
+                    // SE ESTIVER LOGADO: Remove o botão de entrar e coloca Saldo, Histórico, Bilhetes, Depositar e Sair
+                    const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+                    if (profile && profile.role === 'admin' && adminLink) {
+                        adminLink.classList.remove('hidden');
+                    }
 
-                authSection.innerHTML = `
-                    <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
-                        <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
-                    </button>
-                    <button onclick="openMyTicketsModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
-                        <i class="fa-solid fa-ticket mr-1.5 text-brand-primary"></i> Meus Bilhetes
-                    </button>
-                    <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
-                        <span id="user-balance" class="font-bold text-white text-sm">R$ ${userBalance.toFixed(2)}</span>
-                    </div>
-                    <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
-                        Depositar
-                    </button>
-                    <button id="btn-logout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ml-2">
-                        Sair
-                    </button>
-                `;
+                    authSection.innerHTML = `
+                        <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
+                            <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
+                        </button>
+                        <button onclick="openMyTicketsModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
+                            <i class="fa-solid fa-ticket mr-1.5 text-brand-primary"></i> Meus Bilhetes
+                        </button>
+                        <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
+                            <span id="user-balance" class="font-bold text-white text-sm">R$ ${userBalance.toFixed(2)}</span>
+                        </div>
+                        <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
+                            Depositar
+                        </button>
+                        <button id="btn-logout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ml-2">
+                            Sair
+                        </button>
+                    `;
 
-                document.getElementById('btn-logout').addEventListener('click', async () => {
-                    await supabase.auth.signOut();
-                    window.location.reload();
-                });
+                    document.getElementById('btn-logout').addEventListener('click', async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = 'index.html';
+                    });
+                } else {
+                    // SE NÃO ESTIVER LOGADO: Mantém estritamente apenas o botão de Entrar
+                    authSection.innerHTML = `
+                        <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none cursor-pointer">
+                            Entrar
+                        </a>
+                    `;
+                }
             }
         });
 
@@ -343,5 +356,7 @@
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
