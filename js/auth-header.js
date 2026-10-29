@@ -1,87 +1,44 @@
-// Gerenciador de Cadastros e Login (Reserva Local)
-document.addEventListener("DOMContentLoaded", () => {
-  // Carrega o CSS de autenticação automaticamente
-  if (!document.querySelector('link[href="auth-style.css"]')) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'auth-style.css';
-    document.head.appendChild(link);
-  }
-
-  const headerActions = document.querySelector('.header-actions') || document.querySelector('header');
-  if (!headerActions) return;
-
-  const authDiv = document.createElement('div');
-  authDiv.className = 'auth-container';
-
-  const checkUserSession = () => {
-    const loggedUser = localStorage.getItem('real_sports_logged_user');
-    
-    if (loggedUser) {
-      authDiv.innerHTML = `
-        <div class="user-profile-badge">
-          <div class="user-avatar">${loggedUser.charAt(0).toUpperCase()}</div>
-          <span>${loggedUser}</span>
-        </div>
-        <button id="btnLogout" class="btn-auth-login" style="padding: 6px 8px;">Sair</button>
-      `;
-      
-      setTimeout(() => {
-        const btnLogout = document.getElementById('btnLogout');
-        if (btnLogout) {
-          btnLogout.onclick = () => {
-            localStorage.removeItem('real_sports_logged_user');
-            checkUserSession();
-          };
+// auth-header.js: sessão e cabeçalho (Entrar / saldo / Sair). Carregar POR ÚLTIMO
+// ---------- Sessão: troca "Entrar" pelo painel do utilizador ----------
+function mostrarVisitante() {
+    utilizador = null; saldo = 0;
+    $('user-auth-section').innerHTML = `<a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg cursor-pointer">Entrar</a>`;
+    $('admin-link').classList.add('hidden');
+}
+function mostrarUtilizador(user) {
+    utilizador = user;
+    const b = 'px-3 py-2 rounded-lg text-xs font-bold cursor-pointer';
+    $('user-auth-section').innerHTML = `
+    <div class="bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-xs font-bold text-green-400 flex items-center"><i class="fa-solid fa-wallet mr-2"></i><span id="user-balance">R$ 0,00</span></div>
+    <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white ${b}"><i class="fa-solid fa-plus mr-1"></i><span class="hidden md:inline">Depósito</span></button>
+    <button onclick="openHistoryModal()" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white ${b}"><i class="fa-solid fa-clock-rotate-left mr-1"></i><span class="hidden md:inline">Histórico</span></button>
+    <button onclick="openMyTicketsModal()" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white ${b}"><i class="fa-solid fa-ticket mr-1"></i><span class="hidden md:inline">Meus Bilhetes</span></button>
+    <button id="btn-sair" class="bg-red-600 hover:bg-red-500 text-white ${b}"><i class="fa-solid fa-right-from-bracket mr-1"></i><span class="hidden md:inline">Sair</span></button>`;
+    $('btn-sair').addEventListener('click', sair);
+    carregarSaldo(user.id);
+}
+async function carregarSaldo(userId) {
+    try {
+        const { data, error } = await supabase.from('profiles').select('balance, role').eq('id', userId).single();
+        if (!error && data) {
+            saldo = Number(data.balance);
+            if (data.role === 'admin') $('admin-link').classList.remove('hidden');
         }
-      }, 100);
+    } catch (e) { console.warn('Erro ao ler o saldo:', e); }
+    atualizarSaldoNaTela(saldo);
+}
+async function sair() { await supabase.auth.signOut(); mostrarVisitante(); }
 
-    } else {
-      authDiv.innerHTML = `
-        <button id="btnLogin" class="btn-auth-login">Entrar</button>
-        <button id="btnRegister" class="btn-auth-register">Cadastrar</button>
-      `;
-
-      setTimeout(() => {
-        const btnLogin = document.getElementById('btnLogin');
-        const btnRegister = document.getElementById('btnRegister');
-
-        if (btnLogin) {
-          btnLogin.onclick = () => {
-            const email = prompt("Digite seu e-mail de acesso:");
-            if (email) {
-              let users = JSON.parse(localStorage.getItem('real_sports_database') || '[]');
-              const found = users.find(u => u.email === email);
-              
-              if (found) {
-                localStorage.setItem('real_sports_logged_user', found.name);
-                alert(`Bem-vindo de volta, ${found.name}!`);
-                checkUserSession();
-              } else {
-                alert("E-mail não cadastrado! Faça o cadastro primeiro.");
-              }
-            }
-          };
-        }
-
-        if (btnRegister) {
-          btnRegister.onclick = () => {
-            const name = prompt("Digite seu nome:");
-            const email = prompt("Digite seu e-mail:");
-            if (name && email) {
-              let users = JSON.parse(localStorage.getItem('real_sports_database') || '[]');
-              users.push({ name, email });
-              localStorage.setItem('real_sports_database', JSON.stringify(users));
-              
-              localStorage.setItem('real_sports_logged_user', name);
-              alert(`Conta criada com sucesso! Bem-vindo, ${name}.`);
-              checkUserSession();
-            }
-          };
-        }
-      }, 100);
-    }
-  };
+async function iniciarSessao() {
+    renderJogos(); renderBoletim();
+    const { data } = await supabase.auth.getSession();
+    data.session ? mostrarUtilizador(data.session.user) : mostrarVisitante();
+    supabase.auth.onAuthStateChange((evento, session) => {
+        if (session && (!utilizador || utilizador.id !== session.user.id)) mostrarUtilizador(session.user);
+        else if (!session) mostrarVisitante();
+    });
+}
+iniciarSessao();
 
   headerActions.appendChild(authDiv);
   checkUserSession();
