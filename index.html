@@ -446,6 +446,35 @@
         closeDepositModal();
       }
     }
+        // Importa o Supabase (ou usa a instância se já a tiveres configurada)
+import { supabase } from './js/supabase.js';
+
+// Verifica o estado da sessão ao carregar a página
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const container = document.getElementById('auth-header-container');
+
+  if (!container) return;
+
+  if (session) {
+    // Se estiver logado, mostra o botão de Sair
+    container.innerHTML = `
+      <button id="btn-logout" style="background: #e03131; border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">
+        Sair
+      </button>
+    `;
+
+    document.getElementById('btn-logout').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.reload(); // Atualiza a página após sair
+    });
+  } else {
+    // Se não estiver logado, mostra o botão Entrar
+    container.innerHTML = `
+      <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
+    `;
+  }
+});
   </script>
 </body>
 </html>
