@@ -195,32 +195,15 @@
             renderMatches();
             updateBalanceDisplay();
 
-            // Verificar sessão imediatamente ao carregar
-            const { data: { session } } = await supabase.auth.getSession();
-            processarSessao(session);
-
-            // Ouvir mudanças de autenticação
-            supabase.auth.onAuthStateChange((event, session) => {
-                processarSessao(session);
-            });
-        });
-
-        async function processarSessao(session) {
+            const isLogged = localStorage.getItem('real_sports_logged') === 'true';
+            const userEmail = localStorage.getItem('real_sports_email');
             const authSection = document.getElementById('user-auth-section');
             const adminLink = document.getElementById('admin-link');
+
             if (!authSection) return;
 
-            if (session) {
-                // Utilizador Logado
-                let isAdmin = false;
-                try {
-                    const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-                    if (profile && profile.role === 'admin') isAdmin = true;
-                } catch (e) {
-                    console.log("Perfil não encontrado ainda.");
-                }
-
-                if (isAdmin && adminLink) {
+            if (isLogged) {
+                if (userEmail === 'rianp7221@gmail.com' && adminLink) {
                     adminLink.classList.remove('hidden');
                 }
 
@@ -242,15 +225,13 @@
                     </button>
                 `;
 
-                const btnLogout = document.getElementById('btn-logout');
-                if (btnLogout) {
-                    btnLogout.addEventListener('click', async () => {
-                        await supabase.auth.signOut();
-                        window.location.reload();
-                    });
-                }
+                document.getElementById('btn-logout').addEventListener('click', async () => {
+                    localStorage.removeItem('real_sports_logged');
+                    localStorage.removeItem('real_sports_email');
+                    await supabase.auth.signOut();
+                    window.location.reload();
+                });
             } else {
-                // Visitante
                 if (adminLink) adminLink.classList.add('hidden');
                 authSection.innerHTML = `
                     <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none cursor-pointer">
@@ -258,7 +239,7 @@
                     </a>
                 `;
             }
-        }
+        });
 
         function updateBalanceDisplay() {
             const balEl = document.getElementById('user-balance');
@@ -375,6 +356,5 @@
     </script>
 </body>
 </html>
-    </script>
 </body>
 </html>
