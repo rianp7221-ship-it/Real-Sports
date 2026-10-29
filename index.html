@@ -186,6 +186,257 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let selectedBets = [];
+        const $ = id => document.getElementById(id);
+const R = v => Number(v || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+let saldo = 0, utilizador = null;
+ 
+// ---------- Armazenamento local (histórico e bilhetes) ----------
+const chave = t => t + '_' + (utilizador ? utilizador.id : 'visitante');
+const ler = t => { try { return JSON.parse(localStorage.getItem(chave(t)) || '[]'); } catch (e) { return []; } };
+const gravar = (t, v) => { try { localStorage.setItem(chave(t), JSON.stringify(v)); } catch (e) {} };
+function registar(txt) { const h = ler('rs_hist'); h.unshift({ txt, data: new Date().toLocaleString('pt-BR') }); gravar('rs_hist', h.slice(0, 50)); }
+ 
+// ---------- Saldo ----------
+async function mudarSaldo(novo) {
+    const { data, error } = await supabase.from('profiles').update({ balance: novo }).eq('id', utilizador.id).select('balance');
+    if (error || !data || !data.length) {
+        alert('Não foi possível atualizar o saldo no servidor. ' + (error ? error.message : 'Verifique as políticas (RLS) da tabela profiles.'));
+        return false;
+    }
+    saldo = Number(data[0].balance);
+    atualizarSaldoNaTela(saldo);
+    return true;
+}
+function atualizarSaldoNaTela(v) { const el = $('user-balance'); if (el) el.textContent = R(v); }
+function precisaLogin() { if (!utilizador) { alert('Entre na sua conta para continuar.'); location.href = 'login.html'; return true; } return false; }
+ 
+// ---------- Abas ----------
+function switchTab(aba) {
+    $('tab-sports').classList.toggle('hidden', aba !== 'sports');
+    $('tab-mines').classList.toggle('hidden', aba !== 'mines');
+    if (aba === 'mines') renderMines();
+}
+ 
+// ---------- Jogos e odds ----------
+const jogos = [
+    { id: 1, liga: 'Brasileirão', casa: 'Flamengo', fora: 'Palmeiras', hora: 'Hoje 21:30', o: [2.10, 3.20, 3.40] },
+    { id: 2, liga: 'Brasileirão', casa: 'Corinthians', fora: 'São Paulo', hora: 'Hoje 19:00', o: [2.45, 3.05, 2.90] },
+    { id: 3, liga: 'Premier League', casa: 'Arsenal', fora: 'Chelsea', hora: 'Amanhã 13:30', o: [1.85, 3.60, 4.20] },
+    { id: 4, liga: 'La Liga', casa: 'Real Madrid', fora: 'Barcelona', hora: 'Amanhã 17:00', o: [2.20, 3.40, 3.10] },
+    { id: 5, liga: 'Série A', casa: 'Inter', fora: 'Juventus', hora: 'Sábado 15:45', o: [2.30, 3.10, 3.20] },
+    { id: 6, liga: 'Liga Portugal', casa: 'Benfica', fora: 'Porto', hora: 'Sábado 18:00', o: [2.05, 3.30, 3.60] },
+    { id: 7, liga: 'Bundesliga', casa: 'Bayern', fora: 'Dortmund', hora: 'Domingo 14:30', o: [1.70, 4.00, 4.80] }
+];
+const ativo = (id, i) => selectedBets.some(b => b.id === id && b.i === i)
+    ? 'bg-brand-primary border-brand-primary text-white'
+    : 'bg-brand-dark border-brand-border text-gray-300 hover:border-brand-primary';
+ 
+function renderJogos() {
+    $('sports-list').innerHTML = jogos.map(j => `
+    <div class="bg-brand-card border border-brand-border rounded-2xl p-4">
+        <div class="flex justify-between text-[11px] text-gray-500 mb-3"><span>${j.liga}</span><span>${j.hora}</span></div>
+        <div class="flex items-center justify-between gap-3">
+            <div class="flex-1 text-sm font-bold">${j.casa}<br><span class="text-gray-400">${j.fora}</span></div>
+            <div class="grid grid-cols-3 gap-2">
+                ${['1', 'X', '2'].map((p, i) => `
+                <button onclick="escolher(${j.id},${i})" class="w-16 py-2 rounded-lg border text-center cursor-pointer transition-colors ${ativo(j.id, i)}">
+                    <span class="block text-[10px] opacity-70">${p}</span><span class="text-xs font-black">${j.o[i].toFixed(2)}</span>
+                </button>`).join('')}
+            </div>
+        </div>
+    </div>`).join('');
+}
+ 
+function escolher(id, i) {
+    const j = jogos.find(x => x.id === id);
+    const pos = selectedBets.findIndex(b => b.id === id);
+    const nome = i === 0 ? j.casa : i === 2 ? j.fora : 'Empate';
+    if (pos >= 0 && selectedBets[pos].i === i) selectedBets.splice(pos, 1);
+    else {
+        const novo = { id, i, odd: j.o[i], jogo: j.casa + ' x ' + j.fora, nome };
+        if (pos >= 0) selectedBets[pos] = novo; else selectedBets.push(novo);
+    }
+    renderJogos(); renderBoletim();
+}
+ 
+// As odds mudam um pouco a cada 10 segundos (a odd já escolhida fica fixa)
+setInterval(() => {
+    jogos.forEach(j => j.o = j.o.map(o => Math.max(1.05, +(o * (1 + (Math.random() - 0.5) * 0.04)).toFixed(2))));
+    renderJogos();
+}, 10000);
+ 
+// ---------- Boletim ----------
+function renderBoletim() {
+    $('bet-count-badge').textContent = selectedBets.length;
+    $('betslip').classList.toggle('hidden', !selectedBets.length);
+    $('empty-betslip').classList.toggle('hidden', selectedBets.length > 0);
+    $('betslip-content').innerHTML = selectedBets.map(b => `
+    <div class="bg-brand-card border border-brand-border rounded-lg p-2.5 text-xs flex justify-between items-center">
+        <div><div class="text-gray-400">${b.jogo}</div><div class="font-bold text-white">${b.nome} <span class="text-brand-primary">@ ${b.odd.toFixed(2)}</span></div></div>
+        <button onclick="escolher(${b.id},${b.i})" class="text-gray-500 hover:text-red-500 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+    </div>`).join('');
+    updateBetReturn();
+}
+function oddTotal() { return selectedBets.reduce((t, b) => t * b.odd, 1); }
+function updateBetReturn() {
+    const v = parseFloat($('bet-amount').value) || 0;
+    $('total-odds').textContent = oddTotal().toFixed(2);
+    $('bet-return').textContent = R(v * oddTotal());
+}
+async function placeBet() {
+    if (precisaLogin()) return;
+    const v = parseFloat($('bet-amount').value);
+    if (!selectedBets.length) return alert('Escolha pelo menos uma odd.');
+    if (!(v >= 1)) return alert('O valor mínimo é R$ 1,00.');
+    if (v > saldo) return alert('Saldo insuficiente. Faça um depósito.');
+    if (!(await mudarSaldo(saldo - v))) return;
+    const odd = oddTotal();
+    const t = ler('rs_tix');
+    t.unshift({ id: Date.now().toString().slice(-6), jogos: selectedBets.map(b => b.jogo + ': ' + b.nome + ' @' + b.odd.toFixed(2)), valor: v, odd, retorno: v * odd, data: new Date().toLocaleString('pt-BR'), status: 'Pendente' });
+    gravar('rs_tix', t);
+    registar('Aposta de ' + R(v) + ' (odd ' + odd.toFixed(2) + ')');
+    selectedBets = []; renderJogos(); renderBoletim();
+    alert('Aposta realizada! Veja em "Meus Bilhetes".');
+}
+ 
+// ---------- Janelas (modais) ----------
+function openHistoryModal() {
+    const h = ler('rs_hist'), el = $('history-modal').querySelector('.py-8, #hist-list');
+    el.id = 'hist-list';
+    el.className = h.length ? 'space-y-2 max-h-80 overflow-y-auto text-sm' : 'text-sm text-gray-400 text-center py-8';
+    el.innerHTML = h.length ? h.map(x => `<div class="bg-brand-dark border border-brand-border rounded-lg p-2.5 flex justify-between"><span>${x.txt}</span><span class="text-gray-500 text-xs">${x.data}</span></div>`).join('') : 'Nenhuma atividade recente registada.';
+    $('history-modal').classList.remove('hidden');
+}
+function closeHistoryModal() { $('history-modal').classList.add('hidden'); }
+function openDepositModal() { $('deposit-modal').classList.remove('hidden'); }
+function closeDepositModal() { $('deposit-modal').classList.add('hidden'); const a = $('pix-area'); if (a) a.innerHTML = ''; }
+function simulateDeposit() {
+    if (precisaLogin()) return;
+    const v = parseFloat($('deposit-amount').value);
+    if (!(v >= 1)) return alert('O valor mínimo é R$ 1,00.');
+    let a = $('pix-area');
+    if (!a) { a = document.createElement('div'); a.id = 'pix-area'; a.className = 'mt-4 space-y-2 text-center'; $('deposit-modal').firstElementChild.appendChild(a); }
+    a.innerHTML = `<p class="text-[11px] text-gray-400">PIX simulado (copia e cola):</p>
+    <div class="bg-brand-dark border border-brand-border rounded-lg p-2 text-[10px] break-all text-gray-300">00020126SIMULADO${Date.now()}</div>
+    <button onclick="confirmarDeposito(${v})" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Simular pagamento de ${R(v)}</button>`;
+}
+async function confirmarDeposito(v) {
+    if (await mudarSaldo(saldo + v)) { registar('Depósito de ' + R(v)); closeDepositModal(); }
+}
+function openMyTicketsModal() {
+    const t = ler('rs_tix');
+    $('my-tickets-modal-list').innerHTML = t.length ? t.map(x => `
+    <div class="bg-brand-dark border border-brand-border rounded-xl p-3 text-xs space-y-1">
+        <div class="flex justify-between"><span class="font-bold text-white">Bilhete #${x.id}</span><span class="text-amber-500 font-bold">${x.status}</span></div>
+        ${x.jogos.map(g => `<div class="text-gray-400">${g}</div>`).join('')}
+        <div class="flex justify-between pt-1 border-t border-brand-border"><span>Valor: ${R(x.valor)} | Odd: ${x.odd.toFixed(2)}</span><span class="text-brand-primary font-bold">Retorno: ${R(x.retorno)}</span></div>
+        <div class="text-gray-600">${x.data}</div>
+    </div>`).join('') : '<div class="text-sm text-gray-400 text-center py-8">Ainda não tem bilhetes.</div>';
+    $('my-tickets-modal').classList.remove('hidden');
+}
+function closeMyTicketsModal() { $('my-tickets-modal').classList.add('hidden'); }
+ 
+// ---------- Real Mines ----------
+let mn = null;
+const multMines = (k, m) => { let x = 0.97; for (let i = 0; i < k; i++) x *= (25 - i) / (25 - m - i); return x; };
+ 
+function renderMines() {
+    const ativoJogo = mn && !mn.fim;
+    const k = mn ? mn.abertas.size : 0, m = mn ? mn.minas : 3;
+    const celulas = Array.from({ length: 25 }, (_, n) => {
+        let txt = '', cls = 'bg-brand-dark border-brand-border hover:border-brand-primary';
+        if (mn && mn.abertas.has(n)) { txt = '<i class="fa-solid fa-gem text-green-400"></i>'; cls = 'bg-green-900/30 border-green-600'; }
+        else if (mn && mn.fim && mn.bombas.has(n)) { txt = '<i class="fa-solid fa-bomb text-red-500"></i>'; cls = 'bg-red-900/30 border-red-700'; }
+        return `<button ${ativoJogo ? `onclick="abrirCasa(${n})"` : 'disabled'} class="aspect-square rounded-xl border text-xl cursor-pointer transition-colors ${cls}">${txt}</button>`;
+    }).join('');
+    $('tab-mines').innerHTML = `
+    <div class="bg-brand-card p-5 rounded-2xl border border-brand-border shadow-2xl space-y-4">
+        <h2 class="text-xl font-black uppercase italic text-white text-center"><i class="fa-solid fa-bomb text-brand-primary mr-2"></i>Real Mines</h2>
+        <div class="grid grid-cols-5 gap-2">${celulas}</div>
+        ${ativoJogo ? `
+        <div class="text-center text-sm">Multiplicador: <b class="text-brand-primary">${multMines(k, m).toFixed(2)}x</b> | Ganho atual: <b class="text-green-400">${R(mn.aposta * multMines(k, m))}</b></div>
+        <button onclick="retirar()" ${k ? '' : 'disabled'} class="w-full bg-green-600 hover:bg-green-500 disabled:opacity-40 text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Retirar ganho</button>`
+        : `
+        ${mn ? `<div class="text-center text-sm font-bold ${mn.ganhou ? 'text-green-400' : 'text-red-500'}">${mn.msg}</div>` : ''}
+        <div class="grid grid-cols-2 gap-3 text-xs text-gray-400">
+            <label>Aposta (R$)<input id="mines-bet" type="number" min="1" value="10" class="mt-1 w-full bg-brand-dark border border-brand-border rounded-lg px-2.5 py-2 text-white font-bold outline-none"></label>
+            <label>Minas<select id="mines-count" class="mt-1 w-full bg-brand-dark border border-brand-border rounded-lg px-2.5 py-2 text-white font-bold outline-none">
+                ${[1, 3, 5, 10, 15].map(n => `<option value="${n}" ${n === 3 ? 'selected' : ''}>${n}</option>`).join('')}</select></label>
+        </div>
+        <button onclick="iniciarMines()" class="w-full bg-brand-primary hover:bg-brand-primaryHover text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Começar jogo</button>`}
+    </div>`;
+}
+async function iniciarMines() {
+    if (precisaLogin()) return;
+    const v = parseFloat($('mines-bet').value), m = parseInt($('mines-count').value);
+    if (!(v >= 1)) return alert('O valor mínimo é R$ 1,00.');
+    if (v > saldo) return alert('Saldo insuficiente. Faça um depósito.');
+    if (!(await mudarSaldo(saldo - v))) return;
+    const bombas = new Set();
+    while (bombas.size < m) bombas.add(Math.floor(Math.random() * 25));
+    mn = { aposta: v, minas: m, bombas, abertas: new Set(), fim: false };
+    renderMines();
+}
+async function abrirCasa(n) {
+    if (!mn || mn.fim || mn.abertas.has(n)) return;
+    if (mn.bombas.has(n)) {
+        mn.fim = true; mn.ganhou = false; mn.msg = 'Você acertou numa mina! Perdeu ' + R(mn.aposta) + '.';
+        registar('Real Mines: perdeu ' + R(mn.aposta));
+    } else {
+        mn.abertas.add(n);
+        if (mn.abertas.size === 25 - mn.minas) return retirar();
+    }
+    renderMines();
+}
+async function retirar() {
+    if (!mn || mn.fim || !mn.abertas.size) return;
+    const ganho = mn.aposta * multMines(mn.abertas.size, mn.minas);
+    mn.fim = true;
+    if (await mudarSaldo(saldo + ganho)) { mn.ganhou = true; mn.msg = 'Retirou ' + R(ganho) + '!'; registar('Real Mines: ganhou ' + R(ganho)); }
+    else { mn.ganhou = false; mn.msg = 'Erro ao creditar o ganho.'; }
+    renderMines();
+}
+ 
+// ---------- Sessão: troca "Entrar" pelo painel do utilizador ----------
+function mostrarVisitante() {
+    utilizador = null; saldo = 0;
+    $('user-auth-section').innerHTML = `<a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg cursor-pointer">Entrar</a>`;
+    $('admin-link').classList.add('hidden');
+}
+function mostrarUtilizador(user) {
+    utilizador = user;
+    const b = 'px-3 py-2 rounded-lg text-xs font-bold cursor-pointer';
+    $('user-auth-section').innerHTML = `
+    <div class="bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-xs font-bold text-green-400 flex items-center"><i class="fa-solid fa-wallet mr-2"></i><span id="user-balance">R$ 0,00</span></div>
+    <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white ${b}"><i class="fa-solid fa-plus mr-1"></i><span class="hidden md:inline">Depósito</span></button>
+    <button onclick="openHistoryModal()" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white ${b}"><i class="fa-solid fa-clock-rotate-left mr-1"></i><span class="hidden md:inline">Histórico</span></button>
+    <button onclick="openMyTicketsModal()" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white ${b}"><i class="fa-solid fa-ticket mr-1"></i><span class="hidden md:inline">Meus Bilhetes</span></button>
+    <button id="btn-sair" class="bg-red-600 hover:bg-red-500 text-white ${b}"><i class="fa-solid fa-right-from-bracket mr-1"></i><span class="hidden md:inline">Sair</span></button>`;
+    $('btn-sair').addEventListener('click', sair);
+    carregarSaldo(user.id);
+}
+async function carregarSaldo(userId) {
+    try {
+        const { data, error } = await supabase.from('profiles').select('balance, role').eq('id', userId).single();
+        if (!error && data) {
+            saldo = Number(data.balance);
+            if (data.role === 'admin') $('admin-link').classList.remove('hidden');
+        }
+    } catch (e) { console.warn('Erro ao ler o saldo:', e); }
+    atualizarSaldoNaTela(saldo);
+}
+async function sair() { await supabase.auth.signOut(); mostrarVisitante(); }
+ 
+async function iniciarSessao() {
+    renderJogos(); renderBoletim();
+    const { data } = await supabase.auth.getSession();
+    data.session ? mostrarUtilizador(data.session.user) : mostrarVisitante();
+    supabase.auth.onAuthStateChange((evento, session) => {
+        if (session && (!utilizador || utilizador.id !== session.user.id)) mostrarUtilizador(session.user);
+        else if (!session) mostrarVisitante();
+    });
+}
+iniciarSessao();
         // ===== SESSÃO: troca o botão "Entrar" pelo painel do utilizador =====
 const ADMIN_EMAIL = 'rianp7221@gmail.com';
 
