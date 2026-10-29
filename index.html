@@ -186,4 +186,92 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let selectedBets = [];
+        // ===== SESSÃO: troca o botão "Entrar" pelo painel do utilizador =====
+const ADMIN_EMAIL = 'rianp7221@gmail.com';
+
+function formatarReal(valor) {
+    return Number(valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+// Abre uma janela (modal). Usa a função que você já tem, se existir.
+function abrirModal(id, nomeDaFuncao) {
+    if (typeof window[nomeDaFuncao] === 'function') {
+        window[nomeDaFuncao]();
+    } else {
+        document.getElementById(id).classList.remove('hidden');
+    }
+}
+
+// Cabeçalho para quem NÃO entrou
+function mostrarVisitante() {
+    document.getElementById('user-auth-section').innerHTML = `
+        <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-5 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg cursor-pointer">Entrar</a>`;
+    document.getElementById('admin-link').classList.add('hidden');
+}
+
+// Cabeçalho para quem JÁ entrou
+function mostrarUtilizador(user) {
+    document.getElementById('user-auth-section').innerHTML = `
+        <div class="bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-xs font-bold text-green-400 flex items-center">
+            <i class="fa-solid fa-wallet mr-2"></i><span id="user-balance">R$ 0,00</span>
+        </div>
+        <button onclick="abrirModal('deposit-modal','openDepositModal')" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer">
+            <i class="fa-solid fa-plus mr-1"></i><span class="hidden md:inline">Depósito</span>
+        </button>
+        <button onclick="abrirModal('history-modal','openHistoryModal')" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer">
+            <i class="fa-solid fa-clock-rotate-left mr-1"></i><span class="hidden md:inline">Histórico</span>
+        </button>
+        <button onclick="abrirModal('my-tickets-modal','openMyTicketsModal')" class="bg-brand-card border border-brand-border text-gray-300 hover:text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer">
+            <i class="fa-solid fa-ticket mr-1"></i><span class="hidden md:inline">Meus Bilhetes</span>
+        </button>
+        <button id="btn-sair" class="bg-red-600 hover:bg-red-500 text-white px-3 py-2 rounded-lg text-xs font-bold cursor-pointer">
+            <i class="fa-solid fa-right-from-bracket mr-1"></i><span class="hidden md:inline">Sair</span>
+        </button>`;
+
+    document.getElementById('btn-sair').addEventListener('click', sair);
+
+    // Só mostra o link do painel admin para o administrador
+    if (user.email === ADMIN_EMAIL) {
+        document.getElementById('admin-link').classList.remove('hidden');
+    }
+
+    carregarSaldo(user.id);
+}
+
+// Vai buscar o saldo (tabela "profiles", coluna "saldo")
+async function carregarSaldo(userId) {
+    let saldo = 0;
+    try {
+        const { data, error } = await supabase.from('profiles').select('saldo').eq('id', userId).single();
+        if (!error && data) saldo = data.saldo;
+    } catch (e) {
+        console.warn('Não foi possível ler o saldo:', e);
+    }
+    atualizarSaldoNaTela(saldo);
+}
+
+// Use esta função sempre que o saldo mudar (depois de apostar ou depositar)
+function atualizarSaldoNaTela(valor) {
+    const el = document.getElementById('user-balance');
+    if (el) el.textContent = formatarReal(valor);
+}
+
+async function sair() {
+    await supabase.auth.signOut();
+    mostrarVisitante();
+}
+
+// Arranque: verifica se já existe login guardado
+async function iniciarSessao() {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) mostrarUtilizador(data.session.user);
+    else mostrarVisitante();
+
+    // Se entrar ou sair noutro separador, o cabeçalho acompanha
+    supabase.auth.onAuthStateChange((evento, session) => {
+        if (session) mostrarUtilizador(session.user);
+        else mostrarVisitante();
+    });
+}
+iniciarSessao();
         let userBalance = 150.00;
