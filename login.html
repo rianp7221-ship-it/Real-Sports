@@ -16,6 +16,8 @@
             <p id="form-subtitle" class="text-xs text-gray-400">Aceda à sua conta para continuar</p>
         </div>
 
+        <div id="auth-message" class="hidden text-xs p-3 rounded-xl text-center font-bold"></div>
+
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-gray-400 mb-1">E-mail</label>
@@ -39,8 +41,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://eylkglkngskbbutuxuaj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGtnbGtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTU3ODQsImV4cCI6MjA4Nzc3MTc4NH0.hX0U06Yg3q9oR7S4U-E3a5B8Z7x0y1W9V2t4u6i8o0p';
+        const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5aWtnaWtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNDc1NjEsImV4cCI6MjEwODcyMzU2MX0.BszkQeKnrxb9PSA67K0uNzEagC2KLyDEDNYORPif5Fc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isRegister = false;
@@ -50,28 +52,49 @@
             document.getElementById('form-subtitle').innerText = isRegister ? 'Registe-se para começar a apostar' : 'Aceda à sua conta para continuar';
             document.getElementById('submit-btn').innerText = isRegister ? 'Cadastrar' : 'Entrar';
             document.getElementById('toggle-btn').innerText = isRegister ? 'Já tenho conta' : 'Criar conta nova';
+            hideMessage();
+        }
+
+        function showMessage(text, isError = true) {
+            const msg = document.getElementById('auth-message');
+            msg.innerText = text;
+            msg.className = `text-xs p-3 rounded-xl text-center font-bold ${isError ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'}`;
+            msg.classList.remove('hidden');
+        }
+
+        function hideMessage() {
+            document.getElementById('auth-message').classList.add('hidden');
         }
 
         async function handleAuth() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
 
-            if (!email || !password) return alert('Preencha todos os campos!');
+            if (!email || !password) {
+                showMessage('Preencha o e-mail e a palavra-passe.');
+                return;
+            }
 
             if (isRegister) {
                 const { error } = await supabase.auth.signUp({ email, password });
-                if (error) alert('Erro: ' + error.message);
-                else { alert('Conta criada com sucesso! Faça login.'); toggleMode(); }
+                if (error) {
+                    showMessage('Erro ao criar conta: ' + error.message);
+                } else {
+                    showMessage('Conta criada com sucesso! Já pode fazer login.', false);
+                    setTimeout(() => toggleMode(), 2000);
+                }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) alert('Erro ao entrar: ' + error.message);
-                else { window.location.href = 'index.html'; }
+                if (error) {
+                    showMessage('Erro ao entrar: E-mail ou palavra-passe incorretos.');
+                } else {
+                    showMessage('Login efetuado com sucesso! A redirecionar...', false);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
             }
         }
     </script>
-</body>
-</html>
-  </div>
-
 </body>
 </html>
