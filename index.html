@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="header-fix.css">
-<script>
+    <script>
         tailwind.config = {
             darkMode: 'class',
             theme: { 
@@ -41,6 +41,7 @@
             <span class="text-2xl font-black text-white tracking-wider uppercase flex items-center">
                 <span class="bg-brand-primary text-white px-2.5 py-1 rounded-lg mr-2 italic font-black shadow-lg shadow-orange-600/30">REAL</span>SPORTS
             </span>
+
             <nav class="hidden md:flex items-center space-x-6 text-sm font-bold text-gray-300">
                 <a href="#" onclick="switchTab('sports')" class="text-brand-primary hover:text-white transition-colors">INÍCIO</a>
                 <a href="#" onclick="switchTab('sports')" class="hover:text-brand-primary transition-colors">AO VIVO</a>
@@ -68,10 +69,11 @@
                 <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
                     Depositar
                 </button>
-               <div class="auth-container" style="display: flex; gap: 6px; margin-left: auto; align-items: center;">
- <div id="auth-header-container">
-  <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
-</div>
+                <div class="auth-container" style="display: flex; gap: 6px; margin-left: auto; align-items: center;">
+                    <div id="auth-header-container">
+                        <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -214,8 +216,8 @@
         </div>
     </div>
 
-    <!-- Script de Gestão Integrado -->
-    <script>
+    <!-- Script de Gestão Integrado com type="module" -->
+    <script type="module">
         let selectedBets = [];
         let userBalance = 150.00;
 
@@ -280,7 +282,7 @@
             renderBetslip();
         }
 
-        function removeBet(matchId) {
+        window.removeBet = function(matchId) {
             selectedBets = selectedBets.filter(b => b.matchId !== matchId);
             renderBetslip();
         }
@@ -328,7 +330,7 @@
             if (betReturnEl) betReturnEl.innerText = `R$ ${(amount * totalOdds).toFixed(2)}`;
         }
 
-        function placeBet() {
+        window.placeBet = function() {
             if (selectedBets.length === 0) return alert('Selecione pelo menos um jogo.');
 
             const amount = parseFloat(document.getElementById('bet-amount').value) || 0;
@@ -360,12 +362,12 @@
             renderBetslip();
         }
 
-        function switchTab(tab) {
+        window.switchTab = function(tab) {
             document.getElementById('tab-sports').classList.toggle('hidden', tab !== 'sports');
             document.getElementById('tab-mines').classList.toggle('hidden', tab !== 'mines');
         }
 
-        function openMyTicketsModal() {
+        window.openMyTicketsModal = function() {
             const modal = document.getElementById('my-tickets-modal');
             const list = document.getElementById('my-tickets-modal-list');
             if (!modal || !list) return;
@@ -412,69 +414,66 @@
             modal.classList.remove('hidden');
         }
 
-        function closeMyTicketsModal() {
+        window.closeMyTicketsModal = function() {
             const modal = document.getElementById('my-tickets-modal');
             if (modal) modal.classList.add('hidden');
         }
 
-        function openHistoryModal() {
+        window.openHistoryModal = function() {
             const modal = document.getElementById('history-modal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeHistoryModal() {
+        window.closeHistoryModal = function() {
             const modal = document.getElementById('history-modal');
             if (modal) modal.classList.add('hidden');
         }
 
-        function openDepositModal() {
+        window.openDepositModal = function() {
             const modal = document.getElementById('deposit-modal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        function closeDepositModal() {
+        window.closeDepositModal = function() {
             const modal = document.getElementById('deposit-modal');
             if (modal) modal.classList.add('hidden');
         }
 
-        function simulateDeposit() {
+        window.simulateDeposit = function() {
             const amt = parseFloat(document.getElementById('deposit-amount').value) || 0;
-                  if (amt > 0) {
-        userBalance += amt;
-        updateBalanceDisplay();
-        alert(`Depósito de R$ ${amt.toFixed(2)} realizado com sucesso!`);
-        closeDepositModal();
-      }
-    }
-        // Importa o Supabase (ou usa a instância se já a tiveres configurada)
-import { supabase } from './js/supabase.js';
+            if (amt > 0) {
+                userBalance += amt;
+                updateBalanceDisplay();
+                alert(`Depósito de R$ ${amt.toFixed(2)} realizado com sucesso!`);
+                closeDepositModal();
+            }
+        }
 
-// Verifica o estado da sessão ao carregar a página
-window.addEventListener('DOMContentLoaded', async () => {
-  const { data: { session } } = await supabase.auth.getSession();
-  const container = document.getElementById('auth-header-container');
+        // Importa o Supabase e gere o botão dinâmico de Entrar/Sair
+        import { supabase } from './js/supabase.js';
 
-  if (!container) return;
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            const container = document.getElementById('auth-header-container');
 
-  if (session) {
-    // Se estiver logado, mostra o botão de Sair
-    container.innerHTML = `
-      <button id="btn-logout" style="background: #e03131; border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">
-        Sair
-      </button>
-    `;
+            if (!container) return;
 
-    document.getElementById('btn-logout').addEventListener('click', async () => {
-      await supabase.auth.signOut();
-      window.location.reload(); // Atualiza a página após sair
-    });
-  } else {
-    // Se não estiver logado, mostra o botão Entrar
-    container.innerHTML = `
-      <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
-    `;
-  }
-});
-  </script>
+            if (session) {
+                container.innerHTML = `
+                    <button id="btn-logout" style="background: #e03131; border: none; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; cursor: pointer;">
+                        Sair
+                    </button>
+                `;
+                document.getElementById('btn-logout').addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.reload();
+                });
+            } else {
+                container.innerHTML = `
+                    <a href="login.html" class="btn-auth-login" style="background: transparent; border: 1px solid #333; color: #fff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; text-decoration: none; font-weight: bold;">Entrar</a>
+                `;
+            }
+        });
+    </script>
 </body>
 </html>
