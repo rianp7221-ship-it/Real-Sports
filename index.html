@@ -51,22 +51,8 @@
         </div>
 
         <div class="flex items-center space-x-3">
-            <div class="flex items-center space-x-3">
-                <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
-                    <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
-                </button>
-                <button onclick="openMyTicketsModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
-                    <i class="fa-solid fa-ticket mr-1.5 text-brand-primary"></i> Meus Bilhetes
-                </button>
-                <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
-                    <span id="user-balance" class="font-bold text-white text-sm">R$ 150,00</span>
-                </div>
-                <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
-                    Depositar
-                </button>
-                <div id="auth-header-container" class="flex items-center space-x-2">
-                    <a href="login.html" class="bg-transparent border border-brand-border text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:border-brand-primary transition-colors">Entrar</a>
-                </div>
+            <div id="user-auth-section" class="flex items-center space-x-3">
+                <!-- Conteúdo injetado dinamicamente via Supabase -->
             </div>
         </div>
     </header>
@@ -187,11 +173,11 @@
         </div>
     </div>
 
-    <!-- Script Geral -->
+    <!-- Script de Gestão e Supabase com as Chaves Corretas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const SUPABASE_URL = 'https://eylkglkngskbbutuxuaj.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGtnbGtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTU3ODQsImV4cCI6MjA4Nzc3MTc4NH0.hX0U06Yg3q9oR7S4U-E3a5B8Z7x0y1W9V2t4u6i8o0p';
+        const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5aWtnaWtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNDc1NjEsImV4cCI6MjEwODcyMzU2MX0.BszkQeKnrxb9PSA67K0uNzEagC2KLyDEDNYORPif5Fc';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let selectedBets = [];
@@ -208,22 +194,43 @@
             updateBalanceDisplay();
 
             const { data: { session } } = await supabase.auth.getSession();
-            const container = document.getElementById('auth-header-container');
+            const authSection = document.getElementById('user-auth-section');
             const adminLink = document.getElementById('admin-link');
 
-            if (container) {
+            if (authSection) {
                 if (session) {
                     const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
                     if (profile && profile.role === 'admin' && adminLink) adminLink.classList.remove('hidden');
 
-                    container.innerHTML = `<button id="btn-logout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer">Sair</button>`;
+                    authSection.innerHTML = `
+                        <button onclick="openHistoryModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
+                            <i class="fa-solid fa-clock-rotate-left mr-1.5 text-brand-primary"></i> Histórico
+                        </button>
+                        <button onclick="openMyTicketsModal()" class="text-gray-400 hover:text-white px-2.5 py-1.5 text-xs font-bold flex items-center transition-colors bg-brand-card border border-brand-border rounded-lg cursor-pointer">
+                            <i class="fa-solid fa-ticket mr-1.5 text-brand-primary"></i> Meus Bilhetes
+                        </button>
+                        <div class="bg-brand-dark px-3 py-1.5 rounded-lg border border-brand-border flex items-center space-x-2">
+                            <span id="user-balance" class="font-bold text-white text-sm">R$ ${userBalance.toFixed(2)}</span>
+                        </div>
+                        <button onclick="openDepositModal()" class="bg-brand-primary hover:bg-brand-primaryHover text-white font-bold px-4 py-1.5 rounded-lg text-xs transition-colors shadow-lg uppercase tracking-wider cursor-pointer">
+                            Depositar
+                        </button>
+                        <button id="btn-logout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer ml-2">
+                            Sair
+                        </button>
+                    `;
+
                     document.getElementById('btn-logout').addEventListener('click', async () => {
                         await supabase.auth.signOut();
                         window.location.reload();
                     });
                 } else {
                     if (adminLink) adminLink.classList.add('hidden');
-                    container.innerHTML = `<a href="login.html" class="bg-transparent border border-brand-border text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:border-brand-primary transition-colors">Entrar</a>`;
+                    authSection.innerHTML = `
+                        <a href="login.html" class="bg-brand-primary hover:bg-brand-primaryHover text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors shadow-lg text-decoration-none">
+                            Entrar
+                        </a>
+                    `;
                 }
             }
         });
