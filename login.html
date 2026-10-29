@@ -17,7 +17,6 @@
             <p id="form-subtitle" class="text-xs text-gray-400">Aceda à sua conta para continuar</p>
         </div>
 
-        <!-- Mensagem de Feedback Visual -->
         <div id="auth-message" class="hidden text-xs p-3 rounded-xl text-center font-bold"></div>
 
         <div class="space-y-4">
@@ -44,13 +43,7 @@
     <script>
         const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5aWtnaWtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNDc1NjEsImV4cCI6MjEwODcyMzU2MX0.BszkQeKnrxb9PSA67K0uNzEagC2KLyDEDNYORPif5Fc';
-        
-        let supabaseClient = null;
-        try {
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } catch (err) {
-            console.error("Erro ao iniciar Supabase:", err);
-        }
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let isRegisterMode = false;
 
@@ -59,7 +52,7 @@
             document.getElementById('form-subtitle').innerText = isRegisterMode ? 'Registe-se para começar a apostar' : 'Aceda à sua conta para continuar';
             document.getElementById('submit-btn').innerText = isRegisterMode ? 'Cadastrar' : 'Entrar';
             document.getElementById('toggle-btn').innerText = isRegisterMode ? 'Já tenho conta' : 'Criar conta nova';
-            esconderMensagem();
+            document.getElementById('auth-message').classList.add('hidden');
         }
 
         function mostrarMensagem(texto, isError = true) {
@@ -69,57 +62,39 @@
             msg.classList.remove('hidden');
         }
 
-        function esconderMensagem() {
-            document.getElementById('auth-message').classList.add('hidden');
-        }
-
         async function executarAutenticacao() {
-            if (!supabaseClient) {
-                mostrarMensagem('Erro: O cliente Supabase não carregou.');
-                return;
-            }
-
             const emailInput = document.getElementById('email').value.trim();
             const passwordInput = document.getElementById('password').value.trim();
 
             if (!emailInput || !passwordInput) {
-                mostrarMensagem('Por favor, preencha o e-mail e a palavra-passe.');
+                mostrarMensagem('Preencha o e-mail e a palavra-passe.');
                 return;
             }
 
-            try {
-                if (isRegisterMode) {
-                    mostrarMensagem('A processar registo...', false);
-                    const { data, error } = await supabaseClient.auth.signUp({
-                        email: emailInput,
-                        password: passwordInput
-                    });
-
-                    if (error) {
-                        mostrarMensagem('Erro ao criar conta: ' + error.message);
-                    } else {
-                        mostrarMensagem('Conta criada com sucesso! Já pode entrar.', false);
-                        setTimeout(() => alternarModoRegisto(), 2000);
-                    }
+            if (isRegisterMode) {
+                mostrarMensagem('A registar conta...', false);
+                const { error } = await supabase.auth.signUp({ email: emailInput, password: passwordInput });
+                if (error) {
+                    mostrarMensagem('Erro: ' + error.message);
                 } else {
-                    mostrarMensagem('A autenticar...', false);
-                    const { data, error } = await supabaseClient.auth.signInWithPassword({
-                        email: emailInput,
-                        password: passwordInput
-                    });
-
-                    if (error) {
-                        mostrarMensagem('Erro ao entrar: Verifique o e-mail e a palavra-passe.');
-                    } else {
-                        mostrarMensagem('Login bem-sucedido! A redirecionar...', false);
-                        setTimeout(() => {
-                            window.location.href = 'index.html';
-                        }, 800);
-                    }
+                    mostrarMensagem('Conta criada com sucesso! Já pode entrar.', false);
+                    setTimeout(() => alternarModoRegisto(), 2000);
                 }
-            } catch (err) {
-                console.error(err);
-                mostrarMensagem('Ocorreu um erro inesperado.');
+            } else {
+                mostrarMensagem('A autenticar...', false);
+                const { error } = await supabase.auth.signInWithPassword({ email: emailInput, password: passwordInput });
+                if (error) {
+                    mostrarMensagem('E-mail ou palavra-passe incorretos.');
+                } else {
+                    // Marca no navegador que o utilizador está logado
+                    localStorage.setItem('real_sports_logged', 'true');
+                    localStorage.setItem('real_sports_email', emailInput);
+
+                    mostrarMensagem('Login bem-sucedido! A redirecionar...', false);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 600);
+                }
             }
         }
     </script>
