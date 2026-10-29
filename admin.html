@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Real Sports - Painel Administrativo</title>
+  <link rel="stylesheet" href="auth-style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { background-color: #121212; color: #fff; padding: 20px; font-family: sans-serif; }
+    .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2a2a2a; padding-bottom: 15px; }
+    .admin-header h1 span { color: #ff7b00; }
+    button.logout { background: #e03131; border: none; padding: 8px 16px; color: #fff; border-radius: 6px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <div class="admin-header">
+    <h1>REAL SPORTS <span>ADMIN</span></h1>
+    <button class="logout" id="logoutBtn">Sair</button>
+  </div>
+
+  <div style="margin-top: 30px;">
+    <h2>Bem-vindo ao Painel de Controlo, Administrador.</h2>
+    <p>Aqui podes gerir apostas, odds e utilizadores.</p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'A_SUA_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'A_SUA_SUPABASE_ANON_KEY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkAdminAccess() {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || profile.role !== 'admin') {
+        alert('Acesso negado. Área restrita.');
+        window.location.href = 'index.html';
+      }
+    }
+
+    checkAdminAccess();
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      window.location.href = 'login.html';
+    });
+  </script>
+
+</body>
+</html>
