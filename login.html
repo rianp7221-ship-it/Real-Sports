@@ -16,6 +16,7 @@
             <p id="form-subtitle" class="text-xs text-gray-400">Aceda à sua conta para continuar</p>
         </div>
 
+        <!-- Caixa de Mensagem de Erro/Sucesso -->
         <div id="auth-message" class="hidden text-xs p-3 rounded-xl text-center font-bold"></div>
 
         <div class="space-y-4">
@@ -39,6 +40,7 @@
         </div>
     </div>
 
+    <!-- Script Supabase com as Chaves Corretas -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
@@ -91,7 +93,7 @@
                     showMessage('Login efetuado com sucesso! A redirecionar...', false);
                     setTimeout(() => {
                         window.location.href = 'index.html';
-                    }, 1000);
+                    }, 800);
                 }
             }
         }
