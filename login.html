@@ -1,74 +1,76 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Real Sports - Entrar</title>
-  <link rel="stylesheet" href="auth-style.css">
-  <!-- Importa o Supabase do teu projeto -->
-  <script type="module">
-    import { supabase } from './js/supabase.js';
-
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      // 1. Faz o login
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        alert("Erro ao fazer login: " + authError.message);
-        return;
-      }
-
-      const user = authData.user;
-
-      // 2. Verifica a role na tabela de perfis
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error("Erro ao buscar perfil:", profileError);
-        window.location.href = 'index.html';
-        return;
-      }
-
-      // 3. Redirecionamento baseado no nível de acesso
-      if (profileData && profileData.role === 'admin') {
-        window.location.href = 'admin.html';
-      } else {
-        window.location.href = 'index.html';
-      }
-    });
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar - Real Sports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-[#0A0A0A] text-white h-screen flex items-center justify-center p-4">
+    <div class="bg-[#1A1A1A] border border-[#2D2D2D] rounded-2xl p-8 w-full max-w-md shadow-2xl space-y-6">
+        <div class="text-center">
+            <span class="text-3xl font-black text-white tracking-wider uppercase flex items-center justify-center mb-2">
+                <span class="bg-[#FF6B00] text-white px-3 py-1 rounded-lg mr-2 italic font-black shadow-lg">REAL</span>SPORTS
+            </span>
+            <p id="form-subtitle" class="text-xs text-gray-400">Aceda à sua conta para continuar</p>
+        </div>
 
-  <div class="login-container">
-    <div class="logo">
-      <h1>REAL <span>SPORTS</span></h1>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1">E-mail</label>
+                <input type="email" id="email" placeholder="seu@email.com" class="w-full bg-[#0A0A0A] border border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#FF6B00]">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-400 mb-1">Palavra-passe</label>
+                <input type="password" id="password" placeholder="••••••••" class="w-full bg-[#0A0A0A] border border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#FF6B00]">
+            </div>
+
+            <button onclick="handleAuth()" id="submit-btn" class="w-full bg-[#FF6B00] hover:bg-[#FF8533] text-white font-black py-3.5 rounded-xl uppercase text-xs tracking-wider transition-colors cursor-pointer shadow-lg">
+                Entrar
+            </button>
+
+            <div class="flex justify-between items-center text-xs pt-2">
+                <a href="index.html" class="text-gray-400 hover:text-white"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar ao Início</a>
+                <button onclick="toggleMode()" id="toggle-btn" class="text-[#FF6B00] font-bold hover:underline cursor-pointer">Criar conta nova</button>
+            </div>
+        </div>
     </div>
-    
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" required placeholder="seu@email.com">
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" required placeholder="••••••••">
-      </div>
-      
-      <button type="submit">Entrar</button>
-    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://eylkglkngskbbutuxuaj.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5bGtnbGtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxOTU3ODQsImV4cCI6MjA4Nzc3MTc4NH0.hX0U06Yg3q9oR7S4U-E3a5B8Z7x0y1W9V2t4u6i8o0p';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isRegister = false;
+
+        function toggleMode() {
+            isRegister = !isRegister;
+            document.getElementById('form-subtitle').innerText = isRegister ? 'Registe-se para começar a apostar' : 'Aceda à sua conta para continuar';
+            document.getElementById('submit-btn').innerText = isRegister ? 'Cadastrar' : 'Entrar';
+            document.getElementById('toggle-btn').innerText = isRegister ? 'Já tenho conta' : 'Criar conta nova';
+        }
+
+        async function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) return alert('Preencha todos os campos!');
+
+            if (isRegister) {
+                const { error } = await supabase.auth.signUp({ email, password });
+                if (error) alert('Erro: ' + error.message);
+                else { alert('Conta criada com sucesso! Faça login.'); toggleMode(); }
+            } else {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) alert('Erro ao entrar: ' + error.message);
+                else { window.location.href = 'index.html'; }
+            }
+        }
+    </script>
+</body>
+</html>
   </div>
 
 </body>
