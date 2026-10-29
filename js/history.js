@@ -1,52 +1,37 @@
-// --- ADIÇÃO CIRÚRGICA: Gestão de Bilhetes Locais ---
-function renderMyLocalTickets() {
-    const historyList = document.getElementById('history-list');
-    if (!historyList) return;
-
-    let localTickets = JSON.parse(localStorage.getItem('real_sports_tickets') || '[]');
-
-    if (localTickets.length === 0) {
-        return; // Mantém o histórico original intocado se não houver bilhetes locais
-    }
-
-    // Adiciona os bilhetes locais ao histórico existente
-    const localHtml = localTickets.map(t => `
-        <div class="bg-brand-dark border border-brand-border rounded-xl p-4 space-y-3 shadow-md relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-1 h-full bg-brand-primary"></div>
-            <div class="flex justify-between items-center text-xs border-b border-brand-border pb-2">
-                <span class="font-bold text-white"><i class="fa-solid fa-hashtag text-brand-primary mr-1"></i>${t.id} (Local)</span>
-                <span class="text-gray-400">${t.date}</span>
-            </div>
-            <div class="space-y-1">
-                ${t.bets.map(b => `
-                    <div class="text-xs flex justify-between text-gray-300">
-                        <span>${b.match} -> <b class="text-white">${b.selection}</b></span>
-                        <span class="text-brand-primary font-bold">@ ${b.odds.toFixed(2)}</span>
-                    </div>
-                `).join('')}
-            </div>
-            <div class="flex justify-between items-center pt-2 border-t border-brand-border text-xs">
-                <div>
-                    <span class="text-gray-400">Aposta: </span><b class="text-white">R$ ${t.amount.toFixed(2)}</b> | 
-                    <span class="text-gray-400">Odd: </span><b class="text-white">${t.totalOdds.toFixed(2)}</b>
-                </div>
-                <div>
-                    <span class="text-gray-400">Retorno: </span><b class="text-brand-primary">R$ ${t.totalReturn.toFixed(2)}</b>
-                    <span class="ml-2 px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 font-bold">${t.status}</span>
-                </div>
-            </div>
-        </div>
-    `).join('');
-
-    historyList.innerHTML = localHtml + historyList.innerHTML;
+// history.js: janelas de Histórico, Depósito PIX e Meus Bilhetes
+// ---------- Janelas (modais) ----------
+function openHistoryModal() {
+    const h = ler('rs_hist'), el = $('history-modal').querySelector('.py-8, #hist-list');
+    el.id = 'hist-list';
+    el.className = h.length ? 'space-y-2 max-h-80 overflow-y-auto text-sm' : 'text-sm text-gray-400 text-center py-8';
+    el.innerHTML = h.length ? h.map(x => `<div class="bg-brand-dark border border-brand-border rounded-lg p-2.5 flex justify-between"><span>${x.txt}</span><span class="text-gray-500 text-xs">${x.data}</span></div>`).join('') : 'Nenhuma atividade recente registada.';
+    $('history-modal').classList.remove('hidden');
 }
-
-// Executa automaticamente ao abrir o modal de histórico
-document.addEventListener('DOMContentLoaded', () => {
-    const originalOpenHistory = window.openHistoryModal;
-    // Se quiseres que carregue sempre que o histórico abrir:
-    window.openHistoryModal = function() {
-        if (typeof originalOpenHistory === 'function') originalOpenHistory();
-        renderMyLocalTickets();
-    };
-});
+function closeHistoryModal() { $('history-modal').classList.add('hidden'); }
+function openDepositModal() { $('deposit-modal').classList.remove('hidden'); }
+function closeDepositModal() { $('deposit-modal').classList.add('hidden'); const a = $('pix-area'); if (a) a.innerHTML = ''; }
+function simulateDeposit() {
+    if (precisaLogin()) return;
+    const v = parseFloat($('deposit-amount').value);
+    if (!(v >= 1)) return alert('O valor mínimo é R$ 1,00.');
+    let a = $('pix-area');
+    if (!a) { a = document.createElement('div'); a.id = 'pix-area'; a.className = 'mt-4 space-y-2 text-center'; $('deposit-modal').firstElementChild.appendChild(a); }
+    a.innerHTML = `<p class="text-[11px] text-gray-400">PIX simulado (copia e cola):</p>
+    <div class="bg-brand-dark border border-brand-border rounded-lg p-2 text-[10px] break-all text-gray-300">00020126SIMULADO${Date.now()}</div>
+    <button onclick="confirmarDeposito(${v})" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-3 rounded-xl uppercase text-xs cursor-pointer">Simular pagamento de ${R(v)}</button>`;
+}
+async function confirmarDeposito(v) {
+    if (await mudarSaldo(saldo + v)) { registar('Depósito de ' + R(v)); closeDepositModal(); }
+}
+function openMyTicketsModal() {
+    const t = ler('rs_tix');
+    $('my-tickets-modal-list').innerHTML = t.length ? t.map(x => `
+    <div class="bg-brand-dark border border-brand-border rounded-xl p-3 text-xs space-y-1">
+        <div class="flex justify-between"><span class="font-bold text-white">Bilhete #${x.id}</span><span class="text-amber-500 font-bold">${x.status}</span></div>
+        ${x.jogos.map(g => `<div class="text-gray-400">${g}</div>`).join('')}
+        <div class="flex justify-between pt-1 border-t border-brand-border"><span>Valor: ${R(x.valor)} | Odd: ${x.odd.toFixed(2)}</span><span class="text-brand-primary font-bold">Retorno: ${R(x.retorno)}</span></div>
+        <div class="text-gray-600">${x.data}</div>
+    </div>`).join('') : '<div class="text-sm text-gray-400 text-center py-8">Ainda não tem bilhetes.</div>';
+    $('my-tickets-modal').classList.remove('hidden');
+}
+function closeMyTicketsModal() { $('my-tickets-modal').classList.add('hidden'); }
