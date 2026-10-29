@@ -6,6 +6,8 @@
     <title>Entrar - Real Sports</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Importação do Supabase via CDN com verificação -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-[#0A0A0A] text-white h-screen flex items-center justify-center p-4">
     <div class="bg-[#1A1A1A] border border-[#2D2D2D] rounded-2xl p-8 w-full max-w-md shadow-2xl space-y-6">
@@ -16,7 +18,7 @@
             <p id="form-subtitle" class="text-xs text-gray-400">Aceda à sua conta para continuar</p>
         </div>
 
-        <!-- Caixa de Mensagem de Erro/Sucesso -->
+        <!-- Caixa de Mensagens visível -->
         <div id="auth-message" class="hidden text-xs p-3 rounded-xl text-center font-bold"></div>
 
         <div class="space-y-4">
@@ -29,68 +31,80 @@
                 <input type="password" id="password" placeholder="••••••••" class="w-full bg-[#0A0A0A] border border-[#2D2D2D] rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-[#FF6B00]">
             </div>
 
-            <button onclick="handleAuth()" id="submit-btn" class="w-full bg-[#FF6B00] hover:bg-[#FF8533] text-white font-black py-3.5 rounded-xl uppercase text-xs tracking-wider transition-colors cursor-pointer shadow-lg">
+            <button type="button" onclick="executarAcao()" id="submit-btn" class="w-full bg-[#FF6B00] hover:bg-[#FF8533] text-white font-black py-3.5 rounded-xl uppercase text-xs tracking-wider transition-colors cursor-pointer shadow-lg">
                 Entrar
             </button>
 
             <div class="flex justify-between items-center text-xs pt-2">
                 <a href="index.html" class="text-gray-400 hover:text-white"><i class="fa-solid fa-arrow-left mr-1"></i> Voltar ao Início</a>
-                <button onclick="toggleMode()" id="toggle-btn" class="text-[#FF6B00] font-bold hover:underline cursor-pointer">Criar conta nova</button>
+                <button type="button" onclick="alternarModo()" id="toggle-btn" class="text-[#FF6B00] font-bold hover:underline cursor-pointer">Criar conta nova</button>
             </div>
         </div>
     </div>
 
-    <!-- Script Supabase com as Chaves Corretas -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        // Inicialização segura do Supabase com as tuas chaves corretas
         const SUPABASE_URL = 'https://eyikgikngskbbutuxuaj.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5aWtnaWtuZ3NrYmJ1dHV4dWFqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxNDc1NjEsImV4cCI6MjEwODcyMzU2MX0.BszkQeKnrxb9PSA67K0uNzEagC2KLyDEDNYORPif5Fc';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        let isRegister = false;
-
-        function toggleMode() {
-            isRegister = !isRegister;
-            document.getElementById('form-subtitle').innerText = isRegister ? 'Registe-se para começar a apostar' : 'Aceda à sua conta para continuar';
-            document.getElementById('submit-btn').innerText = isRegister ? 'Cadastrar' : 'Entrar';
-            document.getElementById('toggle-btn').innerText = isRegister ? 'Já tenho conta' : 'Criar conta nova';
-            hideMessage();
+        
+        let supabaseClient = null;
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (e) {
+            console.error("Erro ao carregar o Supabase:", e);
         }
 
-        function showMessage(text, isError = true) {
+        let modoRegisto = false;
+
+        function alternarModo() {
+            modoRegisto = !modoRegisto;
+            document.getElementById('form-subtitle').innerText = modoRegisto ? 'Registe-se para começar a apostar' : 'Aceda à sua conta para continuar';
+            document.getElementById('submit-btn').innerText = modoRegisto ? 'Cadastrar' : 'Entrar';
+            document.getElementById('toggle-btn').innerText = modoRegisto ? 'Já tenho conta' : 'Criar conta nova';
+            esconderMensagem();
+        }
+
+        function mostrarMensagem(texto, erro = true) {
             const msg = document.getElementById('auth-message');
-            msg.innerText = text;
-            msg.className = `text-xs p-3 rounded-xl text-center font-bold ${isError ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'}`;
+            msg.innerText = texto;
+            msg.className = `text-xs p-3 rounded-xl text-center font-bold ${erro ? 'bg-red-500/20 text-red-500 border border-red-500/30' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'}`;
             msg.classList.remove('hidden');
         }
 
-        function hideMessage() {
+        function esconderMensagem() {
             document.getElementById('auth-message').classList.add('hidden');
         }
 
-        async function handleAuth() {
+        async function executarAcao() {
+            if (!supabaseClient) {
+                mostrarMensagem('Erro crítico: Biblioteca do Supabase não carregada.');
+                return;
+            }
+
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
 
             if (!email || !password) {
-                showMessage('Preencha o e-mail e a palavra-passe.');
+                mostrarMensagem('Por favor, preencha o e-mail e a palavra-passe.');
                 return;
             }
 
-            if (isRegister) {
-                const { error } = await supabase.auth.signUp({ email, password });
+            if (modoRegisto) {
+                mostrarMensagem('A registar conta...', false);
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
                 if (error) {
-                    showMessage('Erro ao criar conta: ' + error.message);
+                    mostrarMensagem('Erro ao criar conta: ' + error.message);
                 } else {
-                    showMessage('Conta criada com sucesso! Já pode fazer login.', false);
-                    setTimeout(() => toggleMode(), 2000);
+                    mostrarMensagem('Conta criada com sucesso! Já pode fazer login.', false);
+                    setTimeout(() => alternarModo(), 2000);
                 }
             } else {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                mostrarMensagem('A autenticar...', false);
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (error) {
-                    showMessage('Erro ao entrar: E-mail ou palavra-passe incorretos.');
+                    mostrarMensagem('Erro ao entrar: E-mail ou palavra-passe incorretos.');
                 } else {
-                    showMessage('Login efetuado com sucesso! A redirecionar...', false);
+                    mostrarMensagem('Login efetuado com sucesso! A redirecionar...', false);
                     setTimeout(() => {
                         window.location.href = 'index.html';
                     }, 800);
@@ -98,5 +112,7 @@
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
