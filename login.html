@@ -5,36 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Real Sports - Entrar</title>
   <link rel="stylesheet" href="auth-style.css">
-  <!-- Supabase CDN (necessário para a autenticação funcionar) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-</head>
-<body>
-
-  <div class="login-container">
-    <div class="logo">
-      <h1>REAL <span>SPORTS</span></h1>
-    </div>
-    
-    <form id="loginForm">
-      <div class="form-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" required placeholder="seu@email.com">
-      </div>
-      
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" required placeholder="••••••••">
-      </div>
-      
-      <button type="submit">Entrar</button>
-    </form>
-  </div>
-
-  <script>
-    // Configura o teu Supabase aqui (substitua pelas tuas chaves)
-    const SUPABASE_URL = 'A_SUA_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'A_SUA_SUPABASE_ANON_KEY';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- Importa o Supabase do teu projeto -->
+  <script type="module">
+    import { supabase } from './js/supabase.js';
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -63,18 +36,40 @@
 
       if (profileError) {
         console.error("Erro ao buscar perfil:", profileError);
-        window.location.href = 'index.html'; // Fallback para a home normal
+        window.location.href = 'index.html';
         return;
       }
 
       // 3. Redirecionamento baseado no nível de acesso
       if (profileData && profileData.role === 'admin') {
-        window.location.href = 'admin.html'; // Vai para o painel de admin
+        window.location.href = 'admin.html';
       } else {
-        window.location.href = 'index.html'; // Vai para a home de apostas
+        window.location.href = 'index.html';
       }
     });
   </script>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="logo">
+      <h1>REAL <span>SPORTS</span></h1>
+    </div>
+    
+    <form id="loginForm">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required placeholder="seu@email.com">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" required placeholder="••••••••">
+      </div>
+      
+      <button type="submit">Entrar</button>
+    </form>
+  </div>
 
 </body>
 </html>
